@@ -1,0 +1,11 @@
+## ignore all files in the build/ directory
+.vs/
+.vscode/
+UML/
+build/
+build32/
+build64/
+third-party/
+resource/
+OldVersionEngine/
+OldVersionEngine2/

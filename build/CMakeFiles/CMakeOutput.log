@@ -7,7 +7,7 @@ Id flags:
 The output was:
 0
 MSBuild version 17.4.0+18d5aef85 for .NET Framework
-빌드 시작: 2023-05-20 오전 4:10:05
+빌드 시작: 2023-05-20 오전 4:19:35
 1 노드의 "C:\Users\겨울엔군고구마한잔\OneDrive - 한양대학교\바탕 화면\New\build\CMakeFiles\3.24.2\CompilerIdC\CompilerIdC.vcxproj" 프로젝트(기본 대상)입니다.
 PrepareForBuild:
   "Debug\" 디렉터리를 만들고 있습니다.
@@ -33,7 +33,7 @@ FinalizeBuildStatus:
     경고 0개
     오류 0개
 
-경과 시간: 00:00:00.72
+경과 시간: 00:00:00.67
 
 
 Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CompilerIdC.exe"
@@ -50,7 +50,7 @@ Id flags:
 The output was:
 0
 MSBuild version 17.4.0+18d5aef85 for .NET Framework
-빌드 시작: 2023-05-20 오전 4:10:06
+빌드 시작: 2023-05-20 오전 4:19:36
 1 노드의 "C:\Users\겨울엔군고구마한잔\OneDrive - 한양대학교\바탕 화면\New\build\CMakeFiles\3.24.2\CompilerIdCXX\CompilerIdCXX.vcxproj" 프로젝트(기본 대상)입니다.
 PrepareForBuild:
   "Debug\" 디렉터리를 만들고 있습니다.
@@ -76,7 +76,7 @@ FinalizeBuildStatus:
     경고 0개
     오류 0개
 
-경과 시간: 00:00:00.54
+경과 시간: 00:00:00.51
 
 
 Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CompilerIdCXX.exe"
@@ -88,24 +88,24 @@ The CXX compiler identification is MSVC, found in "C:/Users/겨울엔군고구�
 Detecting C compiler ABI info compiled with the following output:
 Change Dir: C:/Users/겨울엔군고구마한잔/OneDrive - 한양대학교/바탕 화면/New/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe cmTC_29c30.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:m && MSBuild version 17.4.0+18d5aef85 for .NET Framework
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe cmTC_d31fe.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:m && MSBuild version 17.4.0+18d5aef85 for .NET Framework
   Microsoft (R) C/C++ 최적화 컴파일러 버전 19.34.31935(x64)
   CMakeCCompilerABI.c
   Copyright (c) Microsoft Corporation. All rights reserved.
-  cl /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_29c30.dir\Debug\\" /Fd"cmTC_29c30.dir\Debug\vc143.pdb" /external:W3 /Gd /TC /errorReport:queue "C:\Program Files\CMake\share\cmake-3.24\Modules\CMakeCCompilerABI.c"
-  cmTC_29c30.vcxproj -> C:\Users\겨울엔군고구마한잔\OneDrive - 한양대학교\바탕 화면\New\build\CMakeFiles\CMakeTmp\Debug\cmTC_29c30.exe
+  cl /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_d31fe.dir\Debug\\" /Fd"cmTC_d31fe.dir\Debug\vc143.pdb" /external:W3 /Gd /TC /errorReport:queue "C:\Program Files\CMake\share\cmake-3.24\Modules\CMakeCCompilerABI.c"
+  cmTC_d31fe.vcxproj -> C:\Users\겨울엔군고구마한잔\OneDrive - 한양대학교\바탕 화면\New\build\CMakeFiles\CMakeTmp\Debug\cmTC_d31fe.exe
 
 
 
 Detecting CXX compiler ABI info compiled with the following output:
 Change Dir: C:/Users/겨울엔군고구마한잔/OneDrive - 한양대학교/바탕 화면/New/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe cmTC_6b0b4.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:m && MSBuild version 17.4.0+18d5aef85 for .NET Framework
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe cmTC_5a118.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:m && MSBuild version 17.4.0+18d5aef85 for .NET Framework
   Microsoft (R) C/C++ 최적화 컴파일러 버전 19.34.31935(x64)
   CMakeCXXCompilerABI.cpp
   Copyright (c) Microsoft Corporation. All rights reserved.
-  cl /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_6b0b4.dir\Debug\\" /Fd"cmTC_6b0b4.dir\Debug\vc143.pdb" /external:W3 /Gd /TP /errorReport:queue "C:\Program Files\CMake\share\cmake-3.24\Modules\CMakeCXXCompilerABI.cpp"
-  cmTC_6b0b4.vcxproj -> C:\Users\겨울엔군고구마한잔\OneDrive - 한양대학교\바탕 화면\New\build\CMakeFiles\CMakeTmp\Debug\cmTC_6b0b4.exe
+  cl /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_5a118.dir\Debug\\" /Fd"cmTC_5a118.dir\Debug\vc143.pdb" /external:W3 /Gd /TP /errorReport:queue "C:\Program Files\CMake\share\cmake-3.24\Modules\CMakeCXXCompilerABI.cpp"
+  cmTC_5a118.vcxproj -> C:\Users\겨울엔군고구마한잔\OneDrive - 한양대학교\바탕 화면\New\build\CMakeFiles\CMakeTmp\Debug\cmTC_5a118.exe
 
 
 

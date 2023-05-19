@@ -9,12 +9,9 @@ class MemoryPool
     using Vector = std::vector<int>;
 
     public :
-        MemoryPool() : m_TotalSize( -1 ), m_ObjectSize( -1 ) 
-        {
-            std::cout << m_TotalSize << m_ObjectSize << std::endl;
-        };
+        MemoryPool();
         MemoryPool( size_t TotalSize );
-        ~MemoryPool() = default;
+        ~MemoryPool();
 
     public:
         void InitIndices();
@@ -29,18 +26,15 @@ class MemoryPool
         template < typename T>
         void Init()
         {
-            try
+            if ( m_TotalSize == 0 )
             {
-                if ( m_TotalSize == -1 ) throw;
+                Log::Error( " Memory Pool's size is not setted, Check if you set memory pool size ");
+                return;
+            }
 
-                m_pStart = static_cast< char* >( std::malloc( m_TotalSize ) );
-                SetObjectSize( sizeof( T ) );
-                InitIndices();
-            }
-            catch ( ... )
-            {
-                //Log::Error( " Memory Pool's size is not setted, Check if you set memory pool size ");
-            }
+            m_pStart = static_cast<char *>(std::malloc(m_TotalSize));
+            SetObjectSize( sizeof( T ) );
+            InitIndices();
         }
 
         template < typename T >
@@ -60,25 +54,21 @@ class MemoryPool
         template < typename T >
         T* Allocate()
         {
-            try
+            if ( CheckFull() ) 
             {
-                if ( CheckFull() ) throw;
-
-                int Index = m_IndicesforAllocated.front();
-                m_IndicesforAllocated.pop();
-                m_IndicesforDeallocated.push_back( Index );
-
-                T* Object = new ( m_pStart + Index * m_ObjectSize ) T();
-
-                //Log::Info( " Create Object " );
-
-                return Object;
-            }
-            catch( ... )
-            {
-                //Log::Error(" Memory Pool is full " );
+                Log::Error( " Memory Pool is full " );
                 return nullptr;
             }
+
+            int Index = m_IndicesforAllocated.front();
+            m_IndicesforAllocated.pop();
+            m_IndicesforDeallocated.push_back( Index );
+
+            T* Object = new ( m_pStart + Index * m_ObjectSize ) T();
+
+            Log::Info( " Create Object, Address is %p ", Object );
+
+            return Object;
         }
 
         template < typename T >
@@ -93,11 +83,11 @@ class MemoryPool
                 m_IndicesforDeallocated.erase( ITR, m_IndicesforDeallocated.end() );
                 Object->~T();
                 m_IndicesforAllocated.push( Index );
-                //Log::Info( " Deallocate Object " );
+                Log::Info( " Deallocate Object, Address is %p ", Object );
             }
             else
             {
-                //Log::Error( " Invalid deallocation request " );
+                Log::Error( " Invalid deallocation request " );
             }
         }
 
