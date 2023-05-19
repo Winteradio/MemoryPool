@@ -14,11 +14,11 @@ class MemoryPool
         ~MemoryPool();
 
     public:
-        void InitIndices();
-
         void SetSize( const size_t& OriginalSize, size_t NewSize );
         void SetTotalSize( size_t NewSize );
         void SetObjectSize( size_t NewSize );
+
+        void InitIndices();
 
         bool CheckFull();
 
@@ -89,6 +89,14 @@ class MemoryPool
             {
                 Log::Error( " Invalid deallocation request " );
             }
+        }
+
+        template < typename T >
+        bool CheckInstance( T* Object )
+        {
+            if ( sizeof( Object ) != m_ObjectSize ) return false;
+            if ( static_cast< size_t >( reinterpret_cast< char* >( Object ) - m_pStart ) > m_TotalSize - m_ObjectSize ) return false;
+            return true;
         }
 
     private :
