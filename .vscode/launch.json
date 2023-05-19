@@ -1,0 +1,41 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug",
+      "program": "${workspaceFolder}/build/Debug/DemoFile.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Debug with MSVC",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/a.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": true
+    },
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "cppdbg",
+      "request": "launch",
+      "args": [],
+      "stopAtEntry": false,
+      "externalConsole": true,
+      "cwd": "c:/Users/겨울엔군고구마한잔/OneDrive - 한양대학교/바탕 화면/New",
+      "program": "c:/Users/겨울엔군고구마한잔/OneDrive - 한양대학교/바탕 화면/New/build/Debug/outDebug",
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    }
+  ]
+}
