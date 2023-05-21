@@ -37,5 +37,34 @@
 # 개선 사항
 1. Object를 해제할 시, 조금 더 빠른 방법 찾아야 함
 
+# Memory Manager and Memory Pool Implementation
+
+The code provides an implementation of a memory manager and memory pool in C++. The memory manager, MemoryManager, manages a collection of memory pools, each handling objects of a specific type. The memory manager allows dynamic allocation and deallocation of objects from the memory pools.
+
+The key components of the code are:
+
+- IMemoryPool: An interface class that defines the common methods and properties for a memory pool.
+- MemoryPool: A template class that implements the memory pool. It is parameterized by the type of objects to be stored in the pool.
+- MemoryManager: A singleton class that manages multiple memory pools. It provides methods for creating memory pools, allocating and deallocating objects, and initializing and destroying the memory manager.
+
+# Usage
+1. Include the necessary headers: Log.h, IMemoryPool.h, MemoryPool.h, and MemoryManager.h.
+
+2. Create a new instance of the memory manager using MemoryManager::GetHandle().
+
+3. Optionally, set a default size for the memory pools using SetDefaultSize(size). This defines the total size of memory available for each memory pool.
+
+4. Allocate objects from a memory pool using Allocate<T>(args...). This allocates an object of type T and returns a pointer to it. If a memory pool for T does not exist, it will be created automatically.
+
+5. Deallocate objects using Deallocate<T>(object). This frees the memory occupied by the object and makes it available for reuse.
+
+6. Destroy the memory manager and release all memory using Destroy().
+
+The provided code includes a sample usage scenario in the WinMain function. It demonstrates creating memory pools, allocating and deallocating objects, and retrieving log messages using the Log class.
+
+Please note that the code provided does not include the implementation of the Log class, so you would need to provide your own implementation or modify the code to work with your logging system.
+
+For more details and usage examples, please refer to the source code and comments in the provided files.
+
 # Class Diagram
 <img src ="./class diagram.png">
