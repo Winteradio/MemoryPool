@@ -1,3 +1,0 @@
-C:/Users/겨울엔군고구마한잔/OneDrive - 한양대학교/바탕 화면/New/build/CMakeFiles/DemoFile.dir
-C:/Users/겨울엔군고구마한잔/OneDrive - 한양대학교/바탕 화면/New/build/CMakeFiles/ALL_BUILD.dir
-C:/Users/겨울엔군고구마한잔/OneDrive - 한양대학교/바탕 화면/New/build/CMakeFiles/ZERO_CHECK.dir

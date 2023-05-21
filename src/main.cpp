@@ -1,4 +1,4 @@
-#include "MemoryPool.h"
+#include "MemoryManager.h"
 
 struct Object
 {
@@ -6,40 +6,34 @@ struct Object
 
 int CALLBACK WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd )
 {
-    
-    MemoryPool NewPool;
+    MemoryManager::GetHandle().SetDefaultSize( 3 );
 
-    NewPool.SetTotalSize(15);
-    NewPool.Init<Object>();
-
-    for (int I = 0; I < 3; I++)
+    for ( int i = 0; i < 3; i++ )
     {
-        NewPool.Allocate<Object>();
+        MemoryManager::GetHandle().Allocate<Object>();
     }
 
-    Object *Test = NewPool.Allocate<Object>();
+    Object* Value = MemoryManager::GetHandle().Allocate<Object>();
+    Log::Info(" Test Object | Type %s | Address %p ", typeid( *Value ).name(), Value );
 
-    for (int I = 0; I < 3; I++)
+    for ( int i = 0; i < 3; i++ )
     {
-        NewPool.Allocate<Object>();
+        MemoryManager::GetHandle().Allocate<Object>();
     }
 
-    Log::Info(" Test Address : %p ", Test );
-    NewPool.Deallocate( Test );
+    MemoryManager::GetHandle().Deallocate<Object>( Value );
 
-    for (int I = 0; I < 9; I++)
+    for ( int i = 0; i < 6; i++ )
     {
-        NewPool.Allocate<Object>();
+        MemoryManager::GetHandle().Allocate<Object>();
     }
 
-    NewPool.Destroy<Object>();
-
-    for ( auto Message : Log::GetMessage() )
+    for ( auto message : Log::GetMessage( ) )
     {
-        std::cout << Message << std::endl;
+        std::cout << message << std::endl;
+        Sleep( 100 );
     }
 
     system("pause");
-
     return 0;
 };

@@ -1,111 +1,92 @@
 #ifndef __MEMORYPOOL_H__
 #define __MEMORYPOOL_H__
 
-#include "Log.h"
+#include "IMemoryPool.h"
 
-class MemoryPool
+template < typename T >
+class MemoryPool : public IMemoryPool
 {
-    using Queue = std::queue<int>;
-    using Vector = std::vector<int>;
+    public :
+        MemoryPool() : 
+            IMemoryPool(), m_TotalSize( 0 ), m_ObjectSize( sizeof ( T ) ) {}
+        MemoryPool( size_t TotalSize ) :
+            IMemoryPool(), m_TotalSize( TotalSize ), m_ObjectSize( sizeof( T ) ) {}
+        virtual ~MemoryPool() {}
 
     public :
-        MemoryPool();
-        MemoryPool( size_t TotalSize );
-        ~MemoryPool();
-
-    public:
-        void SetSize( const size_t& OriginalSize, size_t NewSize );
-        void SetTotalSize( size_t NewSize );
-        void SetObjectSize( size_t NewSize );
-
-        void InitIndices();
-
-        bool CheckFull();
-
-    public :
-        template < typename T>
         void Init()
         {
             if ( m_TotalSize == 0 )
             {
-                Log::Error( " Memory Pool's size is not setted, Check if you set memory pool size ");
+                Log::Error(" Memory's Size is not setted, Please set size ");
                 return;
-            }
+            }   
 
-            m_pStart = static_cast<char *>(std::malloc(m_TotalSize));
-            SetObjectSize( sizeof( T ) );
+            m_pStart = static_cast<char*>( std::malloc( m_TotalSize ) );
             InitIndices();
         }
+        void InitIndices()
+        {
+            for ( size_t I = 0; I < m_TotalSize / m_ObjectSize; I++ )
+            {
+                m_ForAllocated.push( static_cast<int>( I ) );
+            }
 
-        template < typename T >
+            m_ForDeallocated.clear();
+            m_ForDeallocated.reserve( static_cast<int>( m_TotalSize / m_ObjectSize ) );
+        }
         void Destroy()
         {
             int Index;
-            while( !m_IndicesforDeallocated.empty() )
+            while( !m_ForDeallocated.empty() )
             {
-                Index = m_IndicesforDeallocated.back();
-                Deallocate( reinterpret_cast< T* >( m_pStart + Index * m_ObjectSize ) );
+                Index = m_ForDeallocated.back();
+
+                T* pObject = reinterpret_cast<T*>( m_pStart + Index * m_ObjectSize );
+                pObject->~T();
+
+                m_ForAllocated.push( Index );
+                m_ForDeallocated.pop_back();
+
+                Log::Info( " Deallocated Object, Address is %p ", pObject );
             }
 
             std::free( m_pStart );
             m_pStart = nullptr;
         }
+        bool CheckFull() { return m_ForAllocated.empty(); }
 
-        template < typename T >
-        T* Allocate()
+    public :
+    
+        void SetTotalSize( size_t NewSize )
         {
-            if ( CheckFull() ) 
+            if ( m_TotalSize == 0 )
             {
-                Log::Error( " Memory Pool is full " );
-                return nullptr;
-            }
-
-            int Index = m_IndicesforAllocated.front();
-            m_IndicesforAllocated.pop();
-            m_IndicesforDeallocated.push_back( Index );
-
-            T* Object = new ( m_pStart + Index * m_ObjectSize ) T();
-
-            Log::Info( " Create Object, Address is %p ", Object );
-
-            return Object;
-        }
-
-        template < typename T >
-        void Deallocate( T* Object )
-        {
-            int Index = static_cast< int > ( ( reinterpret_cast< char* >( Object ) - m_pStart ) / m_ObjectSize );
-
-            auto ITR = std::remove( m_IndicesforDeallocated.begin(), m_IndicesforDeallocated.end(), Index );
-
-            if ( ITR != m_IndicesforDeallocated.end() )
-            {
-                m_IndicesforDeallocated.erase( ITR, m_IndicesforDeallocated.end() );
-                Object->~T();
-                m_IndicesforAllocated.push( Index );
-                Log::Info( " Deallocate Object, Address is %p ", Object );
+                Log::Info( " Change Size 0 to %zu ", NewSize )
+                *( size_t* )&m_TotalSize = NewSize;
             }
             else
             {
-                Log::Error( " Invalid deallocation request " );
-            }
+                Log::Warn( " Cannot change size, cause alreay set memory size " );
+            }                                                                                             
         }
 
-        template < typename T >
-        bool CheckInstance( T* Object )
-        {
-            if ( sizeof( Object ) != m_ObjectSize ) return false;
-            if ( static_cast< size_t >( reinterpret_cast< char* >( Object ) - m_pStart ) > m_TotalSize - m_ObjectSize ) return false;
-            return true;
-        }
+        const size_t& GetTotalSize() { return m_TotalSize; }
+        const size_t& GetObjectSize() { return m_ObjectSize; }
 
+        char*& GetStartPtr() { return m_pStart; }
+
+        Queue& GetForAllocated() { return m_ForAllocated; }
+        Vector& GetForDeallocated() { return m_ForDeallocated; }
+        
     private :
-        const size_t m_TotalSize;
-        const size_t m_ObjectSize;
         char* m_pStart;
 
-        Queue m_IndicesforAllocated;
-        Vector m_IndicesforDeallocated;
+        const size_t m_TotalSize;
+        const size_t m_ObjectSize;
+
+        Queue m_ForAllocated;
+        Vector m_ForDeallocated;
 };
 
 #endif // __MEMORYPOOL_H__
