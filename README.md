@@ -39,30 +39,81 @@
 
 # Memory Manager and Memory Pool Implementation
 
-The code provides an implementation of a memory manager and memory pool in C++. The memory manager, MemoryManager, manages a collection of memory pools, each handling objects of a specific type. The memory manager allows dynamic allocation and deallocation of objects from the memory pools.
+## Overview
 
-The key components of the code are:
+The Memory Manager and Memory Pool are designed to handle memory initialization and deallocation tasks efficiently. The Memory Manager acts as a central manager for multiple Memory Pools, providing an interface for memory initialization and creating new Memory Pools.
 
-- IMemoryPool: An interface class that defines the common methods and properties for a memory pool.
-- MemoryPool: A template class that implements the memory pool. It is parameterized by the type of objects to be stored in the pool.
-- MemoryManager: A singleton class that manages multiple memory pools. It provides methods for creating memory pools, allocating and deallocating objects, and initializing and destroying the memory manager.
+## Motivation
 
-# Usage
-1. Include the necessary headers: Log.h, IMemoryPool.h, MemoryPool.h, and MemoryManager.h.
+The Memory Manager serves two primary purposes:
+1. To allow external objects to perform memory initialization and deallocation tasks in the Memory Pool.
+2. To manage and coordinate multiple Memory Pools effectively.
 
-2. Create a new instance of the memory manager using MemoryManager::GetHandle().
+## Implementation Guidelines
 
-3. Optionally, set a default size for the memory pools using SetDefaultSize(size). This defines the total size of memory available for each memory pool.
+To ensure proper functionality, follow these guidelines when implementing the Memory Manager and Memory Pool:
 
-4. Allocate objects from a memory pool using Allocate<T>(args...). This allocates an object of type T and returns a pointer to it. If a memory pool for T does not exist, it will be created automatically.
+### Memory Pool Allocation
 
-5. Deallocate objects using Deallocate<T>(object). This frees the memory occupied by the object and makes it available for reuse.
+1. Memory Pools should not support reallocation, as it would invalidate pointers returned during memory initialization.
 
-6. Destroy the memory manager and release all memory using Destroy().
+2. Organize Memory Pools as linked lists, with each list corresponding to a specific object type.
 
-The provided code includes a sample usage scenario in the WinMain function. It demonstrates creating memory pools, allocating and deallocating objects, and retrieving log messages using the Log class.
+3. When a Memory Pool becomes full, create a new Memory Pool and link it to the existing ones.
 
-Please note that the code provided does not include the implementation of the Log class, so you would need to provide your own implementation or modify the code to work with your logging system.
+### Constructor and Destructor
+
+1. Implement the Memory Manager using the Singleton pattern to ensure a single instance throughout the application's lifetime.
+
+### Initialization
+
+#### Default Size Configuration
+
+1. Set a default size for the Memory Pools. By default, the size is set to 512 unless specified otherwise.
+
+#### Memory Pool List Creation
+
+1. Before initializing a Memory Pool, check if a list for the given object type already exists in the map.
+
+2. If the list does not exist, create a new one.
+
+#### Memory Pool Creation
+
+1. Create Memory Pools as needed, based on the demand from the application.
+
+### Deallocation
+
+#### Object Deallocation
+
+1. When deallocating objects, iterate through the Memory Pools of the corresponding object type.
+
+2. Determine if an object can be deallocated by comparing its current address with the start address of the associated Memory Pool.
+
+## Key Components
+
+The code provides an implementation of a memory manager and memory pool in C++. The Memory Manager, MemoryPool, and related classes enable dynamic allocation and deallocation of objects from memory pools.
+
+- `IMemoryPool`: An interface class that defines the common methods and properties for a memory pool.
+- `MemoryPool`: A template class that implements the memory pool. It is parameterized by the type of objects to be stored in the pool.
+- `MemoryManager`: A singleton class that manages multiple memory pools. It provides methods for creating memory pools, allocating and deallocating objects, and initializing and destroying the memory manager.
+
+## Usage
+
+1. Include the necessary headers: `Log.h`, `IMemoryPool.h`, `MemoryPool.h`, and `MemoryManager.h`.
+
+2. Create a new instance of the memory manager using `MemoryManager::GetHandle()`.
+
+3. Optionally, set a default size for the memory pools using `SetDefaultSize(size)`. This defines the total size of memory available for each memory pool.
+
+4. Allocate objects from a memory pool using `Allocate<T>(args...)`. This allocates an object of type `T` and returns a pointer to it. If a memory pool for `T` does not exist, it will be created automatically.
+
+5. Deallocate objects using `Deallocate<T>(object)`. This frees the memory occupied by the object and makes it available for reuse.
+
+6. Destroy the memory manager and release all memory using `Destroy()`.
+
+The provided code includes a sample usage scenario in the `WinMain` function. It demonstrates creating memory pools, allocating and deallocating objects, and retrieving log messages using the `Log` class.
+
+Please note that the code provided does not include the implementation of the `Log` class, so you would need to provide your own implementation or modify the code to work with your logging system.
 
 For more details and usage examples, please refer to the source code and comments in the provided files.
 
