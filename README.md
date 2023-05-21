@@ -36,3 +36,6 @@
 
 # 개선 사항
 1. Object를 해제할 시, 조금 더 빠른 방법 찾아야 함
+
+# Class Diagram
+<img src ="./class diagram.png">
