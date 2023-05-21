@@ -51,6 +51,7 @@ LIST( APPEND SRCS
     ${UTILS_DIR}/Log.h ${UTILS_DIR}/Log.cpp
     ${UTILS_DIR}/Timer.h ${UTILS_DIR}/Timer.cpp
     ## Memory Pool  
+    ${MEMORY_DIR}/IMemoryPool.h
     ${MEMORY_DIR}/MemoryPool.h ${MEMORY_DIR}/MemoryPool.cpp
     ${MEMORY_DIR}/MemoryManager.h ${MEMORY_DIR}/MemoryManager.cpp
 	)
