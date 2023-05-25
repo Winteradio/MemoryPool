@@ -3,26 +3,30 @@ MESSAGE( STATUS " Set Options for Project " )
 
 ## CMake minimum version required
 CMAKE_MINIMUM_REQUIRED(VERSION 3.11)
-
 ## Make Project Name
 SET(PROJECT_NAME "MemoryProject")
 ## Project name
 PROJECT(${PROJECT_NAME})
+## Set C++ Compiler Version : C++17
+SET( CMAKE_CXX_STANDARD 17 )
 
 MESSAGE( STATUS " Setting Done ")
 # ----------------------------------------------- #
 
 
 
-# ------ Set Files ------------------------------ #
-MESSAGE( STATUS " Set Directories Path ")
+# ------ Set Path ------------------------------ #
+MESSAGE( STATUS " Set Path ")
 
 ## Set Directories
 SET( MAIN_DIR ${CMAKE_SOURCE_DIR} )
 SET( DEMOFILE_DIR ${MAIN_DIR}/demofile )
 SET( MEMORYMANAGER_DIR ${MAIN_DIR}/MemoryManager )
 SET( MEMORYPOOL_DIR ${MAIN_DIR}/OnlyMemoryPool )
+SET( SOURCE_DIR )
+SET( FOLDER_DIR )
 
+MESSAGE( STATUS " Setting Done ")
 # ------------------------------------------------ #
 
 
@@ -30,12 +34,15 @@ SET( MEMORYPOOL_DIR ${MAIN_DIR}/OnlyMemoryPool )
 # ------- Set Option ----------------------------- #
 MESSAGE( STATUS " Set Option" )
 
-## Set Option to build
+## Set Option for the library is dynamics or static, the main install is memory manager or memory pool and the demo file is installed or not
 OPTION( BUILD_STATIC_LIBRARY " Set option for the library which is static or dynamic " ON )
 OPTION( INSTALL_MEMORY_MANAGER " Install Memory Manager or Memory Pool " ON )
-OPTION( INSTALL_DEMO_FILE " Install demofile for memorymanager " ON )
-
-SET( FILES_DIR "include/" CACHE PATH "Directory for installing MemoryManager ")
+OPTION( INSTALL_DEMO_FILE " Install demofile for memorymanager " OFF )
+## Set Option for install lib, header files' path
+SET( INCLUDE_DIR ${MAIN_DIR}/include )
+SET( LIB_DIR ${MAIN_DIR}/lib )
+SET( BIN_DIR ${MAIN_DIR}/bin )
+SET( CMAKE_BUILD_TYPE Debug )
 
 IF ( INSTALL_DEMO_FILE )
     ADD_SUBDIRECTORY( ${DEMOFILE_DIR} )
@@ -43,12 +50,61 @@ IF ( INSTALL_DEMO_FILE )
 ENDIF()
 
 IF ( INSTALL_MEMORY_MANAGER )
-    ADD_SUBDIRECTORY( ${MEMORYMANAGER_DIR} )
+    INCLUDE_DIRECTORIES( ${MEMORYMANAGER_DIR} )
+    LIST( APPEND FOLDER_DIR ${MEMORYMANAGER_DIR} )
+    LIST( APPEND SOURCE_DIR 
+        ${FOLDER_DIR}/IMemoryPool.h 
+        ${FOLDER_DIR}/MemoryPool.h
+        ${FOLDER_DIR}/MemoryManager.h ${FOLDER_DIR}/MemoryManager.cpp
+        )
     MESSAGE( STATUS " Install Memory Manager " )
 ELSE()
-    ADD_SUBDIRECTORY( ${MEMORYPOOL_DIR} )
+    INCLUDE_DIRECTORIES( ${MEMORYPOOL_DIR} )
+    LIST( APPEND FOLDER_DIR ${MEMORYPOOL_DIR} )
+    LIST( APPEND SOURCE_DIR 
+        ${FOLDER_DIR}/MemoryPool.h ${FOLDER_DIR}/MemoryPool.cpp
+        )
     MESSAGE( STATUS " Install only Memory Pool " )
 ENDIF()
 
 MESSAGE( STATUS "Setting Done ")
+# ----------------------------------------------- #
+
+
+
+# ------ Create library ---------------- #
+MESSAGE(STATUS " Create Library ")
+
+IF ( BUILD_STATIC_LIBRARY )
+    ADD_LIBRARY( ${PROJECT_NAME} STATIC ${SOURCE_DIR} )
+    MESSAGE( STATUS " Build library as a static " )
+ELSE ()
+    ADD_LIBRARY( ${PROJECT_NAME} SHARED ${SOURCE_DIR} )
+    MESSAGE( STATUS " Build library as a dynamic " )
+ENDIF()
+
+IF ( CMAKE_BUILD_TYPE MATCHES Debug )
+    SET_TARGET_PROPERTIES( ${PROJECT_NAME} PROPERTIES
+        ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${LIB_DIR}
+        LIBRARY_OUTPUT_DIRECTORY_DEBUG ${LIB_DIR}
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG ${BIN_DIR}
+    )
+ELSEIF ( CMAKE_BUILD_TYPE MATCHES Release )
+    SET_TARGET_PROPERTIES( ${PROJECT_NAME} PROPERTIES
+        ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${LIB_DIR}
+        LIBRARY_OUTPUT_DIRECTORY_RELEASE ${LIB_DIR}
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE ${BIN_DIR}
+    )
+ELSE()
+    SET_TARGET_PROPERTIES( ${PROJECT_NAME} PROPERTIES
+        ARCHIVE_OUTPUT_DIRECTORY ${LIB_DIR}
+        LIBRARY_OUTPUT_DIRECTORY ${LIB_DIR}
+        RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR}
+    )
+ENDIF()
+
+FILE( COPY ${FOLDER_DIR} DESTINATION ${INCLUDE_DIR}
+    FILES_MATCHING PATTERN "*.h" )
+
+MESSAGE( STATUS " Creating Done ")
 # ----------------------------------------------- #
