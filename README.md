@@ -14,10 +14,6 @@
 ## 생성자, 소멸자
 1. Singleton 패턴 형식으로 구현
 
-```bash
-Hello
-```
-
 ## 초기화
 ### Default Size 설정
 1. 기본값 512
