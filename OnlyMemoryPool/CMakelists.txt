@@ -1,0 +1,50 @@
+MESSAGE( STATUS " Set Options for Project " )
+
+## Set Project Name
+SET(PROJECT_NAME "MemoryPool")
+
+## Set CXX Compiler Version
+SET( CMAKE_CXX_STANDARD 17 )
+
+MESSAGE( STATUS " Setting Done " )
+# ----------------------------------------------- #
+
+
+
+# ------ Set Source file for Library ------------ # 
+MESSAGE( STATUS " Set Sourfe file " )
+
+## Source Directories
+SET( MEMORYPOOL_SOURCES 
+    ${MEMORYPOOL_DIR}/MemoryPool.h
+    ${MEMORYPOOL_DIR}/MemoryPool.cpp
+)
+
+MESSAGE( STATUS " Setting Done " )
+# ----------------------------------------------- #
+
+
+
+# ------ Set Options for Library ---------------- #
+MESSAGE(STATUS "Set Options for Library")
+
+IF ( BUILD_STATIC_LIBRARY )
+    ADD_LIBRARY( ${PROJECT_NAME} STATIC ${MEMORYPOOL_SOURCES} )
+    MESSAGE( STATUS "Build MemoryManager as a static library" )
+ELSE ()
+    ADD_LIBRARY( ${PROJECT_NAME} SHARED ${MEMORYPOOL_SOURCES} )
+    MESSAGE( STATUS "Build MemoryManager as a dynamic library" )
+ENDIF()
+
+MESSAGE(STATUS "Setting Done")
+# ----------------------------------------------- #
+
+
+TARGET_INCLUDE_DIRECTORIES( ${PROJECT_NAME} PUBLIC ${MEMORYPOOL_DIR} )
+
+INSTALL( TARGETS ${PROJECT_NAME}
+    ARCHIVE DESTINATION lib 
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
+)
+INSTALL( FILES ${MEMORYPOOL_SOURCES} DESTINATION ${FILES_DIR} )

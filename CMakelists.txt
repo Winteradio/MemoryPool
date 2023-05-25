@@ -1,58 +1,54 @@
 # ------ Set Options for Projects --------------- #
-MESSAGE(STATUS "Set Options for Project")
+MESSAGE( STATUS " Set Options for Project " )
 
 ## CMake minimum version required
-cmake_minimum_required(VERSION 3.11)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.11)
 
 ## Make Project Name
-set(PROJECT_NAME "MemoryManager")
+SET(PROJECT_NAME "MemoryProject")
 ## Project name
-project(${PROJECT_NAME})
+PROJECT(${PROJECT_NAME})
 
-## Set CXX Compiler Version
-set(CMAKE_CXX_STANDARD 17)
-
-MESSAGE(STATUS "Setting Done")
+MESSAGE( STATUS " Setting Done ")
 # ----------------------------------------------- #
 
 
 
 # ------ Set Files ------------------------------ #
-MESSAGE(STATUS "Set Source File")
+MESSAGE( STATUS " Set Directories Path ")
 
 ## Set Directories
 SET( MAIN_DIR ${CMAKE_SOURCE_DIR} )
-SET( MEMORY_DIR ${MAIN_DIR}/MemoryPool )
+SET( DEMOFILE_DIR ${MAIN_DIR}/demofile )
+SET( MEMORYMANAGER_DIR ${MAIN_DIR}/MemoryManager )
+SET( MEMORYPOOL_DIR ${MAIN_DIR}/OnlyMemoryPool )
 
-## Source Directories
-SET( MEMORY_MANAGER_SOURCES 
-    ${MEMORY_DIR}/IMemoryPool.h
-    ${MEMORY_DIR}/MemoryPool.h
-    ${MEMORY_DIR}/MemoryManager.h
-    ${MEMORY_DIR}/MemoryManager.cpp
-)
+# ------------------------------------------------ #
 
-## Set Option to build which as static or dynamic library
-OPTION( BUILD_STATIC_LIBRARY ON )
 
-IF ( BUILD_STATIC_LIBRARY )
-    ADD_LIBRARY( ${PROJECT_NAME} STATIC ${MEMORY_MANAGER_SOURCES} )
-    MESSAGE( STATUS "Build MemoryManager as a static library" )
-ELSE ()
-    ADD_LIBRARY( ${PROJECT_NAME} SHARED ${MEMORY_MANAGER_SOURCES} )
-    MESSAGE( STATUS "Build MemoryManager as a dynamic library" )
+
+# ------- Set Option ----------------------------- #
+MESSAGE( STATUS " Set Option" )
+
+## Set Option to build
+OPTION( BUILD_STATIC_LIBRARY " Set option for the library which is static or dynamic " ON )
+OPTION( INSTALL_MEMORY_MANAGER " Install Memory Manager or Memory Pool " ON )
+OPTION( INSTALL_DEMO_FILE " Install demofile for memorymanager " ON )
+
+SET( FILES_DIR "include/" CACHE PATH "Directory for installing MemoryManager ")
+
+IF ( INSTALL_DEMO_FILE )
+    ADD_SUBDIRECTORY( ${DEMOFILE_DIR} )
+    MESSAGE( STATUS " Install Demofile that use MemoryManager " )
 ENDIF()
 
-SET( FILES_DIR "include/MemoryManager" CACHE PATH "Directory for installing MemoryManager ")
+IF ( INSTALL_MEMORY_MANAGER )
+    ADD_SUBDIRECTORY( ${MEMORYMANAGER_DIR} )
+    MESSAGE( STATUS " Install Memory Manager " )
+ELSE()
+    ADD_SUBDIRECTORY( ${MEMORYPOOL_DIR} )
+    MESSAGE( STATUS " Install only Memory Pool " )
+ENDIF()
 
 MESSAGE( STATUS "Setting Done ")
 # ----------------------------------------------- #
-
-TARGET_INCLUDE_DIRECTORIES( ${PROJECT_NAME} PUBLIC ${MEMORY_DIR} ${UTILS_DIR} )
-
-INSTALL( TARGETS ${PROJECT_NAME}
-    ARCHIVE DESTINATION lib 
-    LIBRARY DESTINATION lib
-    RUNTIME DESTINATION bin
-)
-INSTALL( FILES ${MEMORY_MANAGER_SOURCES} DESTINATION ${FILES_DIR} )

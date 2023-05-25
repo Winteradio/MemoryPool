@@ -6,15 +6,7 @@ MemoryPool::~MemoryPool() {}
 
 void MemoryPool::SetSize( const size_t& OriginalSize, size_t NewSize )
 {
-    if ( OriginalSize == 0 )
-    {
-        Log::Info( " Change Size from %zu to %zu ", OriginalSize, NewSize );
-        *( size_t* )&OriginalSize = NewSize;
-    }
-    else
-    {
-        Log::Warn( " Cannot Change Size " );
-    }
+    if ( OriginalSize == 0 ) *( size_t* )&OriginalSize = NewSize;
 }
 void MemoryPool::SetTotalSize( size_t NewSize ) { SetSize( m_TotalSize, NewSize ); }
 void MemoryPool::SetObjectSize( size_t NewSize ) { SetSize( m_ObjectSize, NewSize ); }
