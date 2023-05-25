@@ -1,7 +1,10 @@
 #ifndef __IMEMORYPOOL_H__
 #define __IMEMORYPOOL_H__
 
-#include "Log.h"
+//#include "Log.h"
+
+#include <queue>
+#include <vector>
 
 using Queue = std::queue<int>;
 using Vector = std::vector<int>;
