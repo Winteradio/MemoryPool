@@ -27,22 +27,14 @@ class MemoryManager
         template< typename T >
         bool HasList()
         {
-            if ( m_Data.find( &typeid( T ) ) == m_Data.end() ) 
-            {
-                //Log::Info(" Do not have the List for %s ", typeid( T ).name() );
-                return false;
-            }
+            if ( m_Data.find( &typeid( T ) ) == m_Data.end() ) return false;
             else return true;
         }
 
         template< typename T >
         bool HasMemoryPool()
         {
-            if ( m_Data[ &typeid( T ) ].empty() ) 
-            {
-                //Log::Info(" Do not have the memorypool %s type ", typeid( T ).name() );
-                return false;
-            }
+            if ( m_Data[ &typeid( T ) ].empty() ) return false;
             else return true;
         }
 
@@ -52,20 +44,12 @@ class MemoryManager
             IMemoryPool* memoryPool = new MemoryPool<T>( m_DefaultSize );
             memoryPool->Init();
             m_Data[ &typeid( T ) ].push_back( memoryPool );
-
-            //Log::Info( " Create new memory pool ");
-            //Log::Info( " Type is %s ", typeid( T ).name() );
-            //Log::Info( " Address is %p ", memoryPool );
-            //Log::Info( " Start Pointer is %p ", memoryPool->GetStartPtr() );
         }
 
         template< typename T >
         void CreateList()
         {
             m_Data[ &typeid( T ) ] = MemoryPoolList();
-            //Log::Info( " Create new list for memory pool ");
-            //Log::Info( " Type is %s ", typeid( T ).name() );
-            //Log::Info( " Address is %p ", &m_Data[ &typeid( T )] );
         }
 
         template< typename T, typename... Args >
@@ -87,8 +71,6 @@ class MemoryManager
 
                     T* Object = new ( memoryPool->GetStartPtr() + Index * memoryPool->GetObjectSize() ) T( std::forward<Args>( args ) ... );
 
-                    //Log::Info( " Create Object | Type %s | Address %p ", typeid( T ).name(), Object );
-
                     return Object;  
                 }
             }
@@ -108,14 +90,7 @@ class MemoryManager
             {
                 if ( static_cast< size_t >( reinterpret_cast< char* >( Object ) - memoryPool->GetStartPtr() ) > memoryPool->GetTotalSize() - memoryPool->GetObjectSize() )
                 {
-                    //Log::Info(" This memoryPool do not have the Object " );
-                    //Log::Info(" Start Pointer is %p ", memoryPool->GetStartPtr() );
                     continue;
-                }
-                else
-                {
-                    //Log::Info(" This memoryPool find the Object " );
-                    //Log::Info(" Start Pointer is %p ", memoryPool->GetStartPtr() );
                 }
 
                 Index = static_cast< int > ( ( reinterpret_cast< char* >( Object ) - memoryPool->GetStartPtr() ) / memoryPool->GetObjectSize() );
@@ -127,12 +102,6 @@ class MemoryManager
                     memoryPool->GetForDeallocated().erase( ITR, memoryPool->GetForDeallocated().end() );
                     Object->~T();
                     memoryPool->GetForAllocated().push( Index );
-
-                    //Log::Info( " Delete Object | Type %s | Address %p ", typeid( T ).name(), Object );
-                }
-                else
-                {
-                    //Log::Error( " Invalid deallocation request | Type %s | Address %p ", typeid( T ).name(), Object );
                 }
 
                 break;

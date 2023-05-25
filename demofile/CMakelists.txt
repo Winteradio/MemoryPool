@@ -1,31 +1,8 @@
 # ------ Set Options for Projects --------------- #
 MESSAGE( STATUS "Set Options for Project")
 
-## CMake minimun version required
-CMAKE_MINIMUM_REQUIRED( VERSION 3.11 )
-
-## Make Project Name
-SET( PROJECT_NAME "DemoFile" )
-## Project name
-PROJECT( ${PROJECT_NAME} )
-
-SET(CMAKE_BUILD_TYPE Debug)
-if( MSVC )
-	MESSAGE( STATUS "Compiler is ${CMAKE_CXX_COMPILER_ID}")
-    # Use multi-process debugging
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zi /MP")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /Zi /MP")
-
-    # Use Windbg as the debugger
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /DEBUG:FULL")
-    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /DEBUG:FULL")
-    set(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} /DEBUG /INCREMENTAL:NO")
-endif()
-
 ## Set CXX Compiler Version
 SET( CMAKE_CXX_STANDARD 17 )
-## Set Exe file place
-SET( RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR} )
 
 MESSAGE( STATUS "Setting Done")
 # ----------------------------------------------- #
@@ -35,29 +12,18 @@ MESSAGE( STATUS "Setting Done")
 # ------ Set Files ------------------------------ #
 MESSAGE( STATUS "Set Source File")
 
-## Source Directories
-SET( MAIN_DIR ${CMAKE_SOURCE_DIR} )
-SET( SRC_DIR ${MAIN_DIR} )
-SET( UTILS_DIR ${SRC_DIR}/Utils )
-SET( MEMORY_DIR ${SRC_DIR}/MemoryPool )
-
 ## Source Files
 LIST( APPEND SRCS
-
     ## Demo file
-    ${SRC_DIR}/main.cpp
-    ## Utils
-    ${UTILS_DIR}/Utils.h
-    ${UTILS_DIR}/Log.h ${UTILS_DIR}/Log.cpp
-    ${UTILS_DIR}/Timer.h ${UTILS_DIR}/Timer.cpp
+    ${DEMOFILE_DIR}/main.cpp
     ## Memory Pool  
-    ${MEMORY_DIR}/IMemoryPool.h
-    ${MEMORY_DIR}/MemoryPool.h
-    ${MEMORY_DIR}/MemoryManager.h ${MEMORY_DIR}/MemoryManager.cpp
+    ${MEMORYMANAGER_DIR}/IMemoryPool.h
+    ${MEMORYMANAGER_DIR}/MemoryPool.h
+    ${MEMORYMANAGER_DIR}/MemoryManager.h ${MEMORYMANAGER_DIR}/MemoryManager.cpp
 	)
 
 ## Header Files
-LIST( APPEND INCS ${UTILS_DIR} ${MEMORY_DIR} )
+LIST( APPEND INCS ${MEMORYMANAGER_DIR} )
 
 MESSAGE( STATUS "Setting Done ")
 # ----------------------------------------------- #
@@ -68,7 +34,7 @@ MESSAGE( STATUS "Setting Done ")
 MESSAGE( STATUS "Set Options for Target Files")
 
 ## Include Header Directories for Target Files
-ADD_EXECUTABLE( ${PROJECT_NAME} WIN32 ${SRCS} )
+ADD_EXECUTABLE( ${PROJECT_NAME} ${SRCS} )
 
 TARGET_INCLUDE_DIRECTORIES( ${PROJECT_NAME} PUBLIC ${INCS} )
 
