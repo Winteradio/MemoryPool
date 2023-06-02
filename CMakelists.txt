@@ -1,7 +1,7 @@
 # ------ Set Options for Projects --------------- #
 MESSAGE( STATUS "Set Options for Project")
 
-## CMake minimun version required
+## CMake minimum version required
 CMAKE_MINIMUM_REQUIRED( VERSION 3.11 )
 
 ## Make Project Name
@@ -9,9 +9,11 @@ SET( PROJECT_NAME "MemoryProject" )
 ## Project name
 PROJECT( ${PROJECT_NAME} )
 
-SET(CMAKE_BUILD_TYPE Debug)
+# Option to set the build type
+SET(CMAKE_BUILD_TYPE Debug CACHE STRING "Build Type")
+
 if( MSVC )
-	MESSAGE( STATUS "Compiler is ${CMAKE_CXX_COMPILER_ID}")
+    MESSAGE( STATUS "Compiler is ${CMAKE_CXX_COMPILER_ID}")
     # Use multi-process debugging
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zi /MP")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /Zi /MP")
@@ -56,10 +58,10 @@ OPTION( BUILD_STATIC_LIBRARY "Set option for the library which is static or dyna
 OPTION( INSTALL_MEMORY_MANAGER "Install Memory Manager or Memory Pool" ON )
 OPTION( INSTALL_DEMO_FILE "Install demofile for memorymanager" ON )
 ## Set Option for install lib, header files' path
+SET( CONFIG_DIR ${MAIN_DIR}/config CACHE PATH "Config files for include, lib, bin" )
 SET( INCLUDE_DIR ${MAIN_DIR}/include CACHE PATH "Header files Path" )
 SET( LIB_DIR ${MAIN_DIR}/lib CACHE PATH "Library files Path" )
 SET( BIN_DIR ${MAIN_DIR}/bin CACHE PATH "Execute files Path" )
-SET( CMAKE_BUILD_TYPE Debug CACHE STRING "Build Type")
 
 INCLUDE( Dependency.cmake )
 
@@ -101,7 +103,6 @@ MESSAGE(STATUS "Create Library ")
 IF ( BUILD_STATIC_LIBRARY )
     ADD_LIBRARY( ${PROJECT_NAME} STATIC ${SOURCE_DIR} )
     MESSAGE( STATUS "Build library as a static" )
-    MESSAGE( STATUS ${PROJECT_NAME})
 ELSE ()
     ADD_LIBRARY( ${PROJECT_NAME} SHARED ${SOURCE_DIR} )
     MESSAGE( STATUS "Build library as a dynamic" )
@@ -145,6 +146,14 @@ TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC ${INCS} ${DEP_INCLUDE})
 TARGET_LINK_DIRECTORIES(${PROJECT_NAME} PUBLIC ${DEP_LIB_DIR})
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${DEP_LIBS})
 ADD_DEPENDENCIES(${PROJECT_NAME} ${DEP_LIST})
+
+# Generate the configuration file
+set(CONFIG_CONTENT "set(${PROJECT_NAME}_INCLUDE_DIR ${INCLUDE_DIR})\n")
+set(CONFIG_CONTENT "${CONFIG_CONTENT}set(${PROJECT_NAME}_LIB_DIR ${LIB_DIR})\n")
+set(CONFIG_CONTENT "${CONFIG_CONTENT}set(${PROJECT_NAME}_BIN_DIR ${BIN_DIR})\n")
+
+# Write the configuration file
+file(WRITE ${CONFIG_DIR}/MemoryProjectConfig.cmake ${CONFIG_CONTENT})
 
 MESSAGE(STATUS "Setting Done ")
 # ----------------------------------------------- #
