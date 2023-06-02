@@ -35,8 +35,6 @@ MESSAGE( STATUS "Setting Done")
 # ------ Set Path ------------------------------ #
 MESSAGE( STATUS "Set Path ")
 
-INCLUDE( Dependency.cmake )
-
 ## Set Directories
 SET( MAIN_DIR ${CMAKE_SOURCE_DIR} )
 SET( DEMOFILE_DIR ${MAIN_DIR}/demofile )
@@ -62,6 +60,8 @@ SET( INCLUDE_DIR ${MAIN_DIR}/include CACHE PATH "Header files Path" )
 SET( LIB_DIR ${MAIN_DIR}/lib CACHE PATH "Library files Path" )
 SET( BIN_DIR ${MAIN_DIR}/bin CACHE PATH "Execute files Path" )
 SET( CMAKE_BUILD_TYPE Debug CACHE STRING "Build Type")
+
+INCLUDE( Dependency.cmake )
 
 MESSAGE( STATUS ${CMAKE_BUILD_TYPE} )
 
