@@ -1,70 +1,72 @@
 # ------ Set Options for Projects --------------- #
-MESSAGE( STATUS "Set Options for Project")
+MESSAGE(STATUS "Set Options for Project")
 
 ## Set CXX Compiler Version
-SET( CMAKE_CXX_STANDARD 17 )
+SET(CMAKE_CXX_STANDARD 17)
 
-SET( PROJECT_NAME "Demofile" )
-PROJECT( ${PROJECT_NAME} )
+SET(PROJECT_NAME "Demofile")
+PROJECT(${PROJECT_NAME})
 
-MESSAGE( STATUS "Setting Done")
+MESSAGE(STATUS "Setting Done")
 # ----------------------------------------------- #
 
 
-
 # ------ Set Files ------------------------------ #
-MESSAGE( STATUS "Set Source File")
+MESSAGE(STATUS "Set Source File")
 
 ## Source Files
-LIST( APPEND SRCS
+LIST(APPEND SRCS
     ## Demo file
     ${DEMOFILE_DIR}/main.cpp
     ## Memory Pool  
     ${MEMORYMANAGER_DIR}/IMemoryPool.h
     ${MEMORYMANAGER_DIR}/MemoryPool.h
     ${MEMORYMANAGER_DIR}/MemoryManager.h ${MEMORYMANAGER_DIR}/MemoryManager.cpp
-	)
+)
 
 ## Header Files
-LIST( APPEND INCS ${MEMORYMANAGER_DIR} )
+LIST(APPEND INCS ${MEMORYMANAGER_DIR})
 
-MESSAGE( STATUS "Setting Done ")
+MESSAGE(STATUS "Setting Done ")
 # ----------------------------------------------- #
 
 
-
 # ------ Set Options for Target Files ----------- #
-MESSAGE( STATUS "Set Options for Target Files")
+MESSAGE(STATUS "Set Options for Target Files")
 
 ## Include Header Directories for Target Files
-ADD_EXECUTABLE( ${PROJECT_NAME} ${SRCS} )
+ADD_EXECUTABLE(${PROJECT_NAME} ${SRCS})
 
-TARGET_INCLUDE_DIRECTORIES( ${PROJECT_NAME} PUBLIC ${INCS} )
+SET(EXE_DIR ${DEMOFILE_DIR}/build)
 
-SET( EXE_DIR ${DEMOFILE_DIR}/build )
-
-IF ( CMAKE_BUILD_TYPE MATCHES Debug )
-    SET_TARGET_PROPERTIES( ${PROJECT_NAME} PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${EXE_DIR}
-    LIBRARY_OUTPUT_DIRECTORY_DEBUG ${EXE_DIR}
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${EXE_DIR}/Debug
+IF(CMAKE_BUILD_TYPE MATCHES Debug)
+    SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG ${EXE_DIR}/Debug
     )
-    MESSAGE( STATUS "Build exe file on Debug mode" )
-ELSEIF ( CMAKE_BUILD_TYPE MATCHES Release )
-    SET_TARGET_PROPERTIES( ${PROJECT_NAME} PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${EXE_DIR}
-    LIBRARY_OUTPUT_DIRECTORY_RELEASE ${EXE_DIR}
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${EXE_DIR}/Release
+    MESSAGE(STATUS "Build exe file on Debug mode")
+ELSEIF(CMAKE_BUILD_TYPE MATCHES Release)
+    SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE ${EXE_DIR}/Release
     )
-    MESSAGE( STATUS "Build exe file on Release mode" )
+    MESSAGE(STATUS "Build exe file on Release mode")
 ELSE()
-    SET_TARGET_PROPERTIES( ${PROJECT_NAME} PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY ${EXE_DIR}
-    LIBRARY_OUTPUT_DIRECTORY ${EXE_DIR}
-    RUNTIME_OUTPUT_DIRECTORY ${EXE_DIR}
+    SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${EXE_DIR}
     )
-    MESSAGE( STATUS "Build exe file on Other mode" )
+    MESSAGE(STATUS "Build exe file on Other mode")
 ENDIF()
 
-MESSAGE( STATUS "Setting Done ")
+MESSAGE(STATUS "Setting Done ")
+# ----------------------------------------------- #
+
+
+# ------ Set Options for Target Files ----------- #
+MESSAGE(STATUS "Set Options for Target Files")
+
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC ${INCS} ${DEP_INCLUDE})
+TARGET_LINK_DIRECTORIES(${PROJECT_NAME} PUBLIC ${DEP_LIB_DIR})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${DEP_LIBS})
+ADD_DEPENDENCIES(${PROJECT_NAME} ${DEP_LIST})
+
+MESSAGE(STATUS "Setting Done ")
 # ----------------------------------------------- #

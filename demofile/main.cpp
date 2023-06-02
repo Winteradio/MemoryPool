@@ -1,37 +1,46 @@
-#include "MemoryManager.h"
+#include <MemoryManager.h>
+#include <Log.h>
 #include <iostream>
 
 struct Object
 {
 };
 
+#ifdef _WIN32
+int CALLBACK WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd )
+{
+    Log::Info(" Windows ");
+#elif __linux__
 int main()
 {
+    Log::Info(" Linux ");
+#endif
     MemoryManager::GetHandle().SetDefaultSize( 3 );
 
-    Object* Ptr;
     for ( int i = 0; i < 3; i++ )
     {
-        Ptr = MemoryManager::GetHandle().Allocate<Object>();
-        printf(" Pointer %p \n", Ptr );
+        MemoryManager::GetHandle().Allocate<Object>();
     }
 
     Object* Value = MemoryManager::GetHandle().Allocate<Object>();
-    printf(" Test Object | Type %s | Address %p \n", typeid( *Value ).name(), Value );
+    Log::Info(" Test Object | Type %s | Address %p ", typeid( *Value ).name(), Value );
 
     for ( int i = 0; i < 3; i++ )
     {
-        Ptr = MemoryManager::GetHandle().Allocate<Object>();
-        printf(" Pointer %p \n", Ptr );
+        MemoryManager::GetHandle().Allocate<Object>();
     }
 
-    printf(" Deallocate Pointer %p \n", Value );
     MemoryManager::GetHandle().Deallocate<Object>( Value );
 
     for ( int i = 0; i < 6; i++ )
     {
-        Ptr = MemoryManager::GetHandle().Allocate<Object>();
-        printf(" Pointer %p \n", Ptr );
+        MemoryManager::GetHandle().Allocate<Object>();
+    }
+
+    for ( auto message : Log::GetMessage( ) )
+    {
+        std::cout << message << std::endl;
+        Sleep( 100 );
     }
 
     system("pause");
