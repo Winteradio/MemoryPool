@@ -4,7 +4,7 @@ MESSAGE(STATUS "Set Options for Project")
 ## Set CXX Compiler Version
 SET(CMAKE_CXX_STANDARD 17)
 
-SET(PROJECT_NAME "Demofile")
+SET(PROJECT_NAME "Demofile_MemoryProject")
 PROJECT(${PROJECT_NAME})
 
 MESSAGE(STATUS "Setting Done")
@@ -58,6 +58,7 @@ ENDIF()
 
 MESSAGE(STATUS "Setting Done ")
 # ----------------------------------------------- #
+
 
 
 # ------ Set Options for Target Files ----------- #

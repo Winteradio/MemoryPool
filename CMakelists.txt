@@ -1,22 +1,41 @@
 # ------ Set Options for Projects --------------- #
-MESSAGE( STATUS "Set Options for Project" )
+MESSAGE( STATUS "Set Options for Project")
 
-## CMake minimum version required
-CMAKE_MINIMUM_REQUIRED(VERSION 3.11)
+## CMake minimun version required
+CMAKE_MINIMUM_REQUIRED( VERSION 3.11 )
+
 ## Make Project Name
-SET(PROJECT_NAME "MemoryProject")
+SET( PROJECT_NAME "MemoryProject" )
 ## Project name
-PROJECT(${PROJECT_NAME})
-## Set C++ Compiler Version : C++17
-SET( CMAKE_CXX_STANDARD 17 )
+PROJECT( ${PROJECT_NAME} )
 
-MESSAGE( STATUS "Setting Done ")
+SET(CMAKE_BUILD_TYPE Debug)
+if( MSVC )
+	MESSAGE( STATUS "Compiler is ${CMAKE_CXX_COMPILER_ID}")
+    # Use multi-process debugging
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zi /MP")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /Zi /MP")
+
+    # Use Windbg as the debugger
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /DEBUG:FULL")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /DEBUG:FULL")
+    set(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} /DEBUG /INCREMENTAL:NO")
+endif()
+
+## Set CXX Compiler Version
+SET( CMAKE_CXX_STANDARD 17 )
+## Set Exe file place
+SET( RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR} )
+
+MESSAGE( STATUS "Setting Done")
 # ----------------------------------------------- #
 
 
 
 # ------ Set Path ------------------------------ #
 MESSAGE( STATUS "Set Path ")
+
+INCLUDE( Dependency.cmake )
 
 ## Set Directories
 SET( MAIN_DIR ${CMAKE_SOURCE_DIR} )
@@ -37,7 +56,7 @@ MESSAGE( STATUS "Set Option" )
 ## Set Option for the library is dynamics or static, the main install is memory manager or memory pool and the demo file is installed or not
 OPTION( BUILD_STATIC_LIBRARY "Set option for the library which is static or dynamic" ON )
 OPTION( INSTALL_MEMORY_MANAGER "Install Memory Manager or Memory Pool" ON )
-OPTION( INSTALL_DEMO_FILE "Install demofile for memorymanager" OFF )
+OPTION( INSTALL_DEMO_FILE "Install demofile for memorymanager" ON )
 ## Set Option for install lib, header files' path
 SET( INCLUDE_DIR ${MAIN_DIR}/include CACHE PATH "Header files Path" )
 SET( LIB_DIR ${MAIN_DIR}/lib CACHE PATH "Library files Path" )
@@ -49,6 +68,8 @@ MESSAGE( STATUS ${CMAKE_BUILD_TYPE} )
 IF ( INSTALL_DEMO_FILE )
     ADD_SUBDIRECTORY( ${DEMOFILE_DIR} )
     MESSAGE( STATUS "Install Demofile that use MemoryManager" )
+ELSE()
+    MESSAGE( STATUS "Do not install Demofile" )
 ENDIF()
 
 IF ( INSTALL_MEMORY_MANAGER )
@@ -80,6 +101,7 @@ MESSAGE(STATUS "Create Library ")
 IF ( BUILD_STATIC_LIBRARY )
     ADD_LIBRARY( ${PROJECT_NAME} STATIC ${SOURCE_DIR} )
     MESSAGE( STATUS "Build library as a static" )
+    MESSAGE( STATUS ${PROJECT_NAME})
 ELSE ()
     ADD_LIBRARY( ${PROJECT_NAME} SHARED ${SOURCE_DIR} )
     MESSAGE( STATUS "Build library as a dynamic" )
@@ -112,4 +134,17 @@ FILE( COPY ${FOLDER_DIR}/ DESTINATION ${INCLUDE_DIR}
     FILES_MATCHING PATTERN "*.h" )
 
 MESSAGE( STATUS "Creating Done ")
+# ----------------------------------------------- #
+
+
+
+# ------ Set Options for Target Files ----------- #
+MESSAGE(STATUS "Set Options for Target Files")
+
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC ${INCS} ${DEP_INCLUDE})
+TARGET_LINK_DIRECTORIES(${PROJECT_NAME} PUBLIC ${DEP_LIB_DIR})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${DEP_LIBS})
+ADD_DEPENDENCIES(${PROJECT_NAME} ${DEP_LIST})
+
+MESSAGE(STATUS "Setting Done ")
 # ----------------------------------------------- #

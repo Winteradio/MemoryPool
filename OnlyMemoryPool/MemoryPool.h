@@ -27,7 +27,11 @@ class MemoryPool
         template < typename T>
         void Init()
         {
-            if ( m_TotalSize == 0 ) return;
+            if ( m_TotalSize == 0 ) 
+            {
+                Log::Error( " Memory Pool's size is not setted, Check if you set memory pool size ");         
+                return;
+            }
 
             m_pStart = static_cast<char *>(std::malloc(m_TotalSize));
             SetObjectSize( sizeof( T ) );
@@ -51,13 +55,19 @@ class MemoryPool
         template < typename T >
         T* Allocate()
         {
-            if ( CheckFull() ) return nullptr;
+            if ( CheckFull() ) 
+            {
+                Log::Error( " Memory Pool is full " );
+                return nullptr;
+            }
 
             int Index = m_IndicesforAllocated.front();
             m_IndicesforAllocated.pop();
             m_IndicesforDeallocated.push_back( Index );
 
             T* Object = new ( m_pStart + Index * m_ObjectSize ) T();
+
+            Log::Info( " Create Object, Address is %p ", Object );
 
             return Object;
         }
@@ -74,6 +84,12 @@ class MemoryPool
                 m_IndicesforDeallocated.erase( ITR, m_IndicesforDeallocated.end() );
                 Object->~T();
                 m_IndicesforAllocated.push( Index );
+                
+                Log::Info( " Deallocate Object, Address is %p ", Object );
+            }
+            else
+            {
+                Log::Error( " Invalid deallocation request " );
             }
         }
 

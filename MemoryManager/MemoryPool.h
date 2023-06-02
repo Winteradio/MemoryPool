@@ -16,7 +16,11 @@ class MemoryPool : public IMemoryPool
     public :
         void Init()
         {
-            if ( m_TotalSize == 0 ) return;
+            if ( m_TotalSize == 0 ) 
+            {
+                Log::Error(" Memory's size is not setted, Please set size ");
+                return;
+            }
 
             m_pStart = static_cast<char*>( std::malloc( m_TotalSize ) );
             InitIndices();
@@ -43,6 +47,8 @@ class MemoryPool : public IMemoryPool
 
                 m_ForAllocated.push( Index );
                 m_ForDeallocated.pop_back();
+
+                Log::Info(" Deallocated Object, Address is %p ", pObject );
             }
 
             std::free( m_pStart );
@@ -54,7 +60,15 @@ class MemoryPool : public IMemoryPool
     
         void SetTotalSize( size_t NewSize )
         {
-            if ( m_TotalSize == 0 ) *( size_t* )&m_TotalSize = NewSize;                                            
+            if ( m_TotalSize == 0 ) 
+            {
+                Log::Info(" Change size 0 to %zu ", NewSize );
+                *( size_t* )&m_TotalSize = NewSize;                                            
+            }
+            else
+            {
+                Log::Warn(" Cannot change size, Cause, the memory size already setted ");
+            }
         }
 
         const size_t& GetTotalSize() { return m_TotalSize; }
