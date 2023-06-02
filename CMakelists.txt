@@ -58,7 +58,6 @@ OPTION( BUILD_STATIC_LIBRARY "Set option for the library which is static or dyna
 OPTION( INSTALL_MEMORY_MANAGER "Install Memory Manager or Memory Pool" ON )
 OPTION( INSTALL_DEMO_FILE "Install demofile for memorymanager" ON )
 ## Set Option for install lib, header files' path
-SET( CONFIG_DIR ${MAIN_DIR}/config CACHE PATH "Config files for include, lib, bin" )
 SET( INCLUDE_DIR ${MAIN_DIR}/include CACHE PATH "Header files Path" )
 SET( LIB_DIR ${MAIN_DIR}/lib CACHE PATH "Library files Path" )
 SET( BIN_DIR ${MAIN_DIR}/bin CACHE PATH "Execute files Path" )
@@ -147,8 +146,8 @@ TARGET_LINK_DIRECTORIES(${PROJECT_NAME} PUBLIC ${DEP_LIB_DIR})
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${DEP_LIBS})
 ADD_DEPENDENCIES(${PROJECT_NAME} ${DEP_LIST})
 
-SET_PROPERTY( TARGET ${PROJECT_NAME} PROPERTY ${PROJECT}_INCLUDES ${DEP_INCLUDE} )
-SET_PROPERTY( TARGET ${PROJECT_NAME} PROPERTY ${PROJECT}_LIBS ${DEP_LIBS} )
+SET_PROPERTY( GLOBAL PROPERTY INCLUDE_DIRS ${DEP_INCLUDE} )
+SET_PROPERTY( GLOBAL PROPERTY LIB_DIRS ${DEP_LIBS} )
 
 MESSAGE(STATUS "Setting Done ")
 # ----------------------------------------------- #
