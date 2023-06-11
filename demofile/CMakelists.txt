@@ -4,7 +4,7 @@ MESSAGE(STATUS "Set Options for Project")
 ## Set CXX Compiler Version
 SET(CMAKE_CXX_STANDARD 17)
 
-SET(PROJECT_NAME "Demofile_MemoryProject")
+SET( DEMO_NAME "Demofile")
 PROJECT(${PROJECT_NAME})
 
 MESSAGE(STATUS "Setting Done")
@@ -18,24 +18,43 @@ MESSAGE(STATUS "Set Source File")
 LIST(APPEND SRCS
     ## Demo file
     ${DEMOFILE_DIR}/main.cpp
-    ## Memory Pool  
-    ${MEMORYMANAGER_DIR}/IMemoryPool.h
-    ${MEMORYMANAGER_DIR}/MemoryPool.h
-    ${MEMORYMANAGER_DIR}/MemoryManager.h ${MEMORYMANAGER_DIR}/MemoryManager.cpp
 )
-
-## Header Files
-LIST(APPEND INCS ${MEMORYMANAGER_DIR})
 
 MESSAGE(STATUS "Setting Done ")
 # ----------------------------------------------- #
+
+
+
+# ------ Set Options for Target Files ----------- #
+MESSAGE( STATUS "Add Executable by platform")
+
+## Include Header Directories for Target Files
+IF ( WIN32 )
+    MESSAGE( STATUS "Windows Platform for demofile")
+    ADD_EXECUTABLE( ${DEMO_NAME} WIN32 ${SRCS} )
+
+    SET( STATIC_LIB MemoryProject.lib )
+    SET( DYNAMIC_LIB MemoryProject.dll )
+
+ELSE ()
+    MESSAGE( STATUS "Other Platform for demofile")
+    ADD_EXECUTABLE( ${DEMO_NAME} ${SRCS} )
+
+    SET( STATIC_LIB MemoryProject.a )
+    SET( DYNAMIC_LIB MemoryProject.so )
+
+ENDIF()
+
+MESSAGE( STATUS "Setting Done" )
+# ----------------------------------------------- #
+
 
 
 # ------ Set Options for Target Files ----------- #
 MESSAGE(STATUS "Set Options for Target Files")
 
 ## Include Header Directories for Target Files
-ADD_EXECUTABLE(${PROJECT_NAME} ${SRCS})
+ADD_EXECUTABLE(${PROJECT_NAME} WIN32 ${SRCS})
 
 SET(EXE_DIR ${DEMOFILE_DIR}/build)
 
