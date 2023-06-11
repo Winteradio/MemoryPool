@@ -5,7 +5,7 @@ MESSAGE(STATUS "Set Options for Project")
 SET(CMAKE_CXX_STANDARD 17)
 
 SET( DEMO_NAME "Demofile")
-PROJECT(${PROJECT_NAME})
+PROJECT( ${DEMO_NAME} )
 
 MESSAGE(STATUS "Setting Done")
 # ----------------------------------------------- #
@@ -50,43 +50,86 @@ MESSAGE( STATUS "Setting Done" )
 
 
 
-# ------ Set Options for Target Files ----------- #
+# ------ Download LogProject in Github ---------- #
+MESSAGE( STATUS "Download LogProject" )
+
+INCLUDE( ExternalProject )
+
+SET( DEP_INCLUDE )
+SET( DEP_LIBS )
+SET( DEP_LIST )
+
+SET( DEMO_MAIN_DIR ${CMAKE_SOURCE_DIR}/demofile )
+SET( DEMO_INCLUDE_DIR ${DEMO_MAIN_DIR}/build/include )
+SET( DEMO_LIB_DIR ${DEMO_MAIN_DIR}/build/lib )
+SET( DEMO_BIN_DIR ${DEMO_MAIN_DIR}/build/bin )
+SET( DEMO_ARC_DIR ${DEMO_MAIN_DIR}/build/arc )
+
+EXTERNALPROJECT_ADD(
+	MemoryProject_demo
+	GIT_REPOSITORY GIT_REPOSITORY https://github.com/Winteradio/MemoryPool.git
+	GIT_TAG "v2.1.1"
+
+	PREFIX ${CMAKE_BINARY_DIR}/Prefix/LogProject
+
+	UPDATE_COMMAND "" PATCH_COMMAND "" TEST_COMMAND "" INSTALL_COMMAND ""
+	CMAKE_ARGS 
+		-DINCLUDE_DIR=${DEMO_INCLUDE_DIR}
+		-DLIB_DIR=${DEMO_LIB_DIR}
+		-DBIN_DIR=${DEMO_BIN_DIR}
+        -DARC_DIR=${DEMO_ARC_DIR}
+		-DCMAKE_BUILD_TYPE=Debug
+		-DBUILD_STATIC_LIBRARY=OFF
+ 		-DINSTALL_DEMO_FILE=OFF 
+)
+LIST( APPEND DEP_INCLUDE ${DEMO_INCLUDE_DIR} )
+LIST( APPEND DEP_LIST MemoryProject_demo )
+LIST( APPEND DEP_LIBS ${DEMO_ARC_DIR}/${STATIC_LIB} )
+
+MESSAGE( STATUS "Downloading Done" )
+# ----------------------------------------------- #
+
+
+
+# ------ Link LogProject on Target  ------------- #
 MESSAGE(STATUS "Set Options for Target Files")
 
-## Include Header Directories for Target Files
-ADD_EXECUTABLE(${PROJECT_NAME} WIN32 ${SRCS})
+ADD_CUSTOM_COMMAND(TARGET ${DEMO_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${DEMO_BIN_DIR}/${DYNAMIC_LIB} $<TARGET_FILE_DIR:${DEMO_NAME}>
+)
 
-SET(EXE_DIR ${DEMOFILE_DIR}/build)
-
-IF(CMAKE_BUILD_TYPE MATCHES Debug)
-    SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY_DEBUG ${EXE_DIR}/Debug
-    )
-    MESSAGE(STATUS "Build exe file on Debug mode")
-ELSEIF(CMAKE_BUILD_TYPE MATCHES Release)
-    SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY_RELEASE ${EXE_DIR}/Release
-    )
-    MESSAGE(STATUS "Build exe file on Release mode")
-ELSE()
-    SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY ${EXE_DIR}
-    )
-    MESSAGE(STATUS "Build exe file on Other mode")
-ENDIF()
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC ${DEP_INCLUDE})
+TARGET_LINK_DIRECTORIES(${PROJECT_NAME} PUBLIC ${DEMO_LIB_DIR})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${DEP_LIBS})
+ADD_DEPENDENCIES(${PROJECT_NAME} ${DEP_LIST})
 
 MESSAGE(STATUS "Setting Done ")
 # ----------------------------------------------- #
 
 
 
-# ------ Set Options for Target Files ----------- #
+# ------ Set Executable file -------------------- #
 MESSAGE(STATUS "Set Options for Target Files")
 
-TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC ${INCS} ${DEP_INCLUDE})
-TARGET_LINK_DIRECTORIES(${PROJECT_NAME} PUBLIC ${DEP_LIB_DIR})
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${DEP_LIBS})
-ADD_DEPENDENCIES(${PROJECT_NAME} ${DEP_LIST})
+SET( EXE_DIR ${DEMO_MAIN_DIR}/build )
 
-MESSAGE(STATUS "Setting Done ")
+IF ( CMAKE_BUILD_TYPE MATCHES Debug )
+    SET_TARGET_PROPERTIES( ${DEMO_NAME} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG ${EXE_DIR}/Debug
+    )
+    MESSAGE( STATUS "Build exe file on Debug mode" )
+ELSEIF ( CMAKE_BUILD_TYPE MATCHES Release )
+    SET_TARGET_PROPERTIES( ${DEMO_NAME} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE ${EXE_DIR}/Release
+    )
+    MESSAGE( STATUS "Build exe file on Release mode" )
+ELSE()
+    SET_TARGET_PROPERTIES( ${DEMO_NAME} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${EXE_DIR}
+    )
+    MESSAGE( STATUS "Build exe file on Other mode" )
+ENDIF()
+
+MESSAGE( STATUS "Setting Done ")
 # ----------------------------------------------- #

@@ -9,25 +9,20 @@ SET( PROJECT_NAME "MemoryProject" )
 ## Project name
 PROJECT( ${PROJECT_NAME} )
 
-# Option to set the build type
-SET(CMAKE_BUILD_TYPE Debug CACHE STRING "Build Type")
-
 if( MSVC )
     MESSAGE( STATUS "Compiler is ${CMAKE_CXX_COMPILER_ID}")
     # Use multi-process debugging
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zi /MP")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /Zi /MP")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zi /MP")
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /Zi /MP")
 
     # Use Windbg as the debugger
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /DEBUG:FULL")
-    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /DEBUG:FULL")
-    set(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} /DEBUG /INCREMENTAL:NO")
-endif()
+    SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /DEBUG:FULL")
+    SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /DEBUG:FULL")
+    SET(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} /DEBUG /INCREMENTAL:NO")
+ENDIF()
 
 ## Set CXX Compiler Version
 SET( CMAKE_CXX_STANDARD 17 )
-## Set Exe file place
-SET( RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR} )
 
 MESSAGE( STATUS "Setting Done")
 # ----------------------------------------------- #
@@ -66,15 +61,6 @@ SET( CMAKE_BUILD_TYPE Debug CACHE STRING "Build Type" )
 
 INCLUDE( Dependency.cmake )
 
-MESSAGE( STATUS ${CMAKE_BUILD_TYPE} )
-
-IF ( INSTALL_DEMO_FILE )
-    ADD_SUBDIRECTORY( ${DEMOFILE_DIR} )
-    MESSAGE( STATUS "Install Demofile that use MemoryManager" )
-ELSE()
-    MESSAGE( STATUS "Do not install Demofile" )
-ENDIF()
-
 IF ( INSTALL_MEMORY_MANAGER )
     INCLUDE_DIRECTORIES( ${MEMORYMANAGER_DIR} )
     LIST( APPEND FOLDER_DIR ${MEMORYMANAGER_DIR} )
@@ -93,6 +79,11 @@ ELSE()
     MESSAGE( STATUS "Install only Memory Pool" )
 ENDIF()
 
+IF ( WIN32 )
+    MESSAGE( STATUS "Windows Platform for library")
+    SET( CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS 1 )
+ENDIF()
+
 MESSAGE( STATUS "Setting Done ")
 # ----------------------------------------------- #
 
@@ -108,6 +99,9 @@ ELSE ()
     ADD_LIBRARY( ${PROJECT_NAME} SHARED ${SOURCE_DIR} )
     MESSAGE( STATUS "Build library as a dynamic" )
 ENDIF()
+
+FILE( COPY ${FOLDER_DIR}/ DESTINATION ${INCLUDE_DIR}
+    FILES_MATCHING PATTERN "*.h" )
 
 IF ( CMAKE_BUILD_TYPE MATCHES Debug )
     SET_TARGET_PROPERTIES( ${PROJECT_NAME} PROPERTIES
@@ -132,9 +126,6 @@ ELSE()
     MESSAGE( STATUS "Build library on Other mode" )
 ENDIF()
 
-FILE( COPY ${FOLDER_DIR}/ DESTINATION ${INCLUDE_DIR}
-    FILES_MATCHING PATTERN "*.h" )
-
 MESSAGE( STATUS "Creating Done ")
 # ----------------------------------------------- #
 
@@ -149,4 +140,19 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${DEP_LIBS})
 ADD_DEPENDENCIES(${PROJECT_NAME} ${DEP_LIST})
 
 MESSAGE(STATUS "Setting Done ")
+# ----------------------------------------------- #
+
+
+
+# ------ Create Demofile ------------------------ #
+MESSAGE( STATUS "Create Demofile")
+
+IF ( INSTALL_DEMO_FILE )
+    ADD_SUBDIRECTORY( ${DEMOFILE_DIR} )
+    MESSAGE( STATUS "Install Demofile that use Log" )
+ELSE()
+    MESSAGE( STATUS "Do not install Log's Demofile" )
+ENDIF()
+
+MESSAGE( STATUS "Create Done")
 # ----------------------------------------------- #
