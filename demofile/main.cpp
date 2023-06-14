@@ -39,12 +39,7 @@ int main()
         MemoryManager::GetHandle().Allocate<Object>();
     }
 
-    for ( auto message : Log::GetMessage( ) )
-    {
-        std::cout << message << std::endl;
-        Sleep( 100 );
-    }
-
-    system("pause");
+    Log::Print();
+    
     return 0;
 };
