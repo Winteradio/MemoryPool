@@ -53,6 +53,7 @@ OPTION( BUILD_STATIC_LIBRARY "Set option for the library which is static or dyna
 OPTION( INSTALL_MEMORY_MANAGER "Install Memory Manager or Memory Pool" ON )
 OPTION( INSTALL_DEMO_FILE "Install demofile for memorymanager" ON )
 ## Set Option for install lib, header files' path
+SET( PREFIX_DIR ${MAIN_DIR}/build/Prefix CACHE PATH "Prefix Path" )
 SET( INCLUDE_DIR ${MAIN_DIR}/build/include CACHE PATH "Header files Path" )
 SET( ARC_DIR ${MAIN_DIR}/build/arc CACHE PATH "Archieve files Path" )
 SET( LIB_DIR ${MAIN_DIR}/build/lib CACHE PATH "Library files Path" )
@@ -120,7 +121,7 @@ ELSEIF ( CMAKE_BUILD_TYPE MATCHES Release )
 ELSE()
     SET_TARGET_PROPERTIES( ${PROJECT_NAME} PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY ${ARC_DIR}
-        LIBRARY_OUTPUT_DIRECTORY ${LIB_DIR}
+        LIBRARY_OUTPUT_DIRECTORY ${LIB_DIR}LogProject.lib
         RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR}
     )
     MESSAGE( STATUS "Build library on Other mode" )
