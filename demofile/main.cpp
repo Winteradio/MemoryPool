@@ -1,5 +1,5 @@
-#include <MemoryManager.h>
-#include <Log.h>
+#include <MemoryProject/MemoryManager.h>
+#include <LogProject/Log.h>
 #include <iostream>
 
 struct Object
