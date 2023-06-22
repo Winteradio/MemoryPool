@@ -20,6 +20,25 @@ MESSAGE( STATUS "Setting Done")
 
 
 
+# ------ Set Options for Target Files ----------- #
+MESSAGE( STATUS "Add Executable by platform")
+
+## Include Header Directories for Target Files
+IF ( WIN32 )
+    SET( STATIC_LIB lib )
+    SET( DYNAMIC_LIB dll)
+
+ELSE ()
+    SET( STATIC_LIB a )
+    SET( DYNAMIC_LIB so )
+
+ENDIF()
+
+MESSAGE( STATUS "Setting Done" )
+# ----------------------------------------------- #
+
+
+
 #### Log ----------------------------------- #
 MESSAGE( STATUS "Log Project - Linking ... ")
 
@@ -42,7 +61,7 @@ EXTERNALPROJECT_ADD(
 )
 LIST( APPEND DEP_INCLUDE ${INCLUDE_DIR} )
 LIST( APPEND DEP_LIST LogProject )
-LIST( APPEND DEP_LIBS ${ARC_DIR}/LogProject.lib )
+LIST( APPEND DEP_LIBS ${ARC_DIR}/LogProject.${STATIC_LIB} )
 
 MESSAGE( STATUS "Log Project - Done")
 #### Log ----------------------------------- #

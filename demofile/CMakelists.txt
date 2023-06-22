@@ -105,7 +105,7 @@ SET( DEMO_ARC_DIR ${DEMOFILE_DIR}/build/arc )
 EXTERNALPROJECT_ADD(
 	MemoryProject_Demo
 	GIT_REPOSITORY GIT_REPOSITORY https://github.com/Winteradio/MemoryPool.git
-	GIT_TAG "v3.0.3"
+	GIT_TAG "v3.0.4"
 
 	PREFIX ${DEMO_PREFIX_DIR}/MemoryProject
 
@@ -123,7 +123,8 @@ EXTERNALPROJECT_ADD(
 )
 LIST( APPEND DEP_INCLUDE ${DEMO_INCLUDE_DIR} )
 LIST( APPEND DEP_LIST MemoryProject_Demo )
-LIST( APPEND DEP_LIBS ${DEMO_ARC_DIR}/MemoryProject.${STATIC_LIB} ${DEMO_ARC_DIR}/LogProject.${STATIC_LIB} )
+LIST( APPEND DEP_LIBS ${DEMO_ARC_DIR}/MemoryProject.${STATIC_LIB} )
+LIST( APPEND DEP_LIBS ${DEMO_ARC_DIR}/LogProject.${STATIC_LIB} )
 
 MESSAGE( STATUS "Downloading Done" )
 # ----------------------------------------------- #
