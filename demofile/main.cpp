@@ -24,15 +24,15 @@ int main()
         MemoryManager::GetHandle().Allocate<Object>();
     }
 
-    Object* Value = MemoryManager::GetHandle().Allocate<Object>();
-    Log::Info(" Test Object | Type %s | Address %p ", typeid( *Value ).name(), Value );
+    MemoryPtr<Object> mpValue = MemoryManager::GetHandle().Allocate<Object>();
+    Log::Info(" Test Object | Type %s | Address %p ", typeid( mpValue.Access() ).name(), mpValue );
 
     for ( int i = 0; i < 3; i++ )
     {
         MemoryManager::GetHandle().Allocate<Object>();
     }
 
-    MemoryManager::GetHandle().Deallocate<Object>( Value );
+    MemoryManager::GetHandle().Deallocate<Object>( mpValue );
 
     for ( int i = 0; i < 6; i++ )
     {

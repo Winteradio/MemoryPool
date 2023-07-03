@@ -1,8 +1,9 @@
 #ifndef __MEMORYMANAGER_H__
 #define __MEMORYMANAGER_H__
 
-//#include "Log.h"
 #include "MemoryPool.h"
+#include "MemoryPtr.h"
+
 #include <list>
 #include <map>
 #include <typeinfo>
@@ -29,7 +30,7 @@ class MemoryManager
         {
             if ( m_Data.find( &typeid( T ) ) == m_Data.end() ) 
             {
-                Log::Info(" Do not have ths List for %s ", typeid( T ).name() );
+                Log::Info(" Do not have ths MemoryPool List for %s ", typeid( T ).name() );
                 return false;
             }
             else return true;
@@ -40,7 +41,7 @@ class MemoryManager
         {
             if ( m_Data[ &typeid( T ) ].empty() ) 
             {
-                Log::Info(" Do not have the memoryPool %p type ", typeid( T ).name() );
+                Log::Info(" Do not have the MemoryPool for %s ", typeid( T ).name() );
                 return false;
             }
             else return true;
@@ -53,10 +54,8 @@ class MemoryManager
             memoryPool->Init();
             m_Data[ &typeid( T ) ].push_back( memoryPool );
 
-            Log::Info( " Create new memory pool ");
-            Log::Info( " Type is %s ", typeid( T ).name() );
-            Log::Info( " Address is %p ", memoryPool );
-            Log::Info( " Start Pointer is %p ", memoryPool->GetStartPtr() );
+            Log::Info( " Create new memory pool for %s ", typeid( T ).name() );
+            Log::Info( " MemoryPool | Address %p | Start Pointer %p ", memoryPool, memoryPool->GetStartPtr() );
         }
 
         template< typename T >
@@ -64,13 +63,12 @@ class MemoryManager
         {
             m_Data[ &typeid( T ) ] = MemoryPoolList();
 
-            Log::Info( " Create new list for memory pool ");
-            Log::Info( " Type is %s ", typeid( T ).name() );
-            Log::Info( " Address is %p ", &m_Data[ &typeid( T )] );
+            Log::Info( " Create new memory pool list for %s ", typeid( T ).name() );
+            Log::Info( " MemoryPool List | Address %p ", &m_Data[ &typeid( T )] );
         }
 
         template< typename T, typename... Args >
-        T* Allocate( Args&&... args)
+        MemoryPtr<T> Allocate( Args&&... args)
         {
             if ( !HasList<T>() ) CreateList<T>();
             if ( !HasMemoryPool<T>() ) CreateMemoryPool<T>();
@@ -86,11 +84,11 @@ class MemoryManager
                     memoryPool->GetForAllocated().pop();
                     memoryPool->GetForDeallocated().push_back( Index );
 
-                    T* Object = new ( memoryPool->GetStartPtr() + Index * memoryPool->GetObjectSize() ) T( std::forward<Args>( args ) ... );
+                    MemoryPtr<T> mPtr = new ( memoryPool->GetStartPtr() + Index * memoryPool->GetObjectSize() ) T( std::forward<Args>( args ) ... );
 
-                    Log::Info( " Create Object | Type %s | Address %p ", typeid( T ).name(), Object );
+                    Log::Info( " Create Object | Type %s | Address %p ", typeid( T ).name(), mPtr.GetPtr() );
 
-                    return Object;  
+                    return mPtr;  
                 }
             }
 
@@ -99,7 +97,7 @@ class MemoryManager
         }
 
         template< typename T >
-        void Deallocate( T* Object )
+        void Deallocate( MemoryPtr<T>& mPtr )
         {
             if ( !HasList<T>() ) return;
             if ( !HasMemoryPool<T>() ) return;
@@ -107,28 +105,27 @@ class MemoryManager
             int Index;
             for ( auto memoryPool : m_Data[ &typeid( T ) ] )
             {
-                if ( static_cast< size_t >( reinterpret_cast< char* >( Object ) - memoryPool->GetStartPtr() ) > memoryPool->GetTotalSize() - memoryPool->GetObjectSize() )
+                if ( static_cast< size_t >( reinterpret_cast< char* >( mPtr.GetPtr() ) - memoryPool->GetStartPtr() ) > memoryPool->GetTotalSize() - memoryPool->GetObjectSize() )
                 {
-                    Log::Info(" This memoryPool do not have the Object " );
-                    Log::Info(" Start Pointer is %p ", memoryPool->GetStartPtr() );
+                    Log::Info(" This memoryPool do not have the Object, Start Pointer %p ", memoryPool->GetStartPtr() );
                     continue;
                 }
 
-                Index = static_cast< int > ( ( reinterpret_cast< char* >( Object ) - memoryPool->GetStartPtr() ) / memoryPool->GetObjectSize() );
+                Index = static_cast< int > ( ( reinterpret_cast< char* >( mPtr.GetPtr() ) - memoryPool->GetStartPtr() ) / memoryPool->GetObjectSize() );
 
                 auto ITR = std::remove( memoryPool->GetForDeallocated().begin(), memoryPool->GetForDeallocated().end(), Index );
 
                 if ( ITR != memoryPool->GetForDeallocated().end() )
                 {
-                    memoryPool->GetForDeallocated().erase( ITR, memoryPool->GetForDeallocated().end() );
-                    Object->~T();
-                    memoryPool->GetForAllocated().push( Index );
+                    Log::Info( " Delete Object | Type %s | Address %p ", typeid( T ).name(), mPtr.GetPtr() );
 
-                    Log::Info( " Delete Object | Type %s | Address %p ", typeid( T ).name(), Object );
+                    memoryPool->GetForDeallocated().erase( ITR, memoryPool->GetForDeallocated().end() );
+                    mPtr.Destruct();
+                    memoryPool->GetForAllocated().push( Index );
                 }
                 else
                 {
-                    Log::Error( " Invalid deallocation request | Type %s | Address %p ", typeid( T ).name(), Object );
+                    Log::Error( " Invalid deallocation request | Type %s | Address %p ", typeid( T ).name(), mPtr.GetPtr() );
                 }
 
                 break;
