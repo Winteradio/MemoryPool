@@ -16,6 +16,7 @@ void MemoryManager::Destroy()
         for ( auto memoryPool : memoryList )
         {
             memoryPool->Destroy();
+            delete memoryPool;
         }
     }
 }

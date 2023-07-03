@@ -1,7 +1,7 @@
 #ifndef __IMEMORYPOOL_H__
 #define __IMEMORYPOOL_H__
 
-//#include "Log.h"
+#include <LogProject/Log.h>
 
 #include <queue>
 #include <vector>

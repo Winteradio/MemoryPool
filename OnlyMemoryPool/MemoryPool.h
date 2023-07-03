@@ -1,6 +1,9 @@
 #ifndef __MEMORYPOOL_H__
 #define __MEMORYPOOL_H__
 
+#include "MemoryPtr.h"
+
+#include <LogProject/Log.h>
 #include <queue>
 #include <vector>
 
@@ -29,7 +32,7 @@ class MemoryPool
         {
             if ( m_TotalSize == 0 ) 
             {
-                Log::Error( " Memory Pool's size is not setted, Check if you set memory pool size ");         
+                Log::Error( " MemoryPool | Please set the size " );         
                 return;
             }
 
@@ -53,11 +56,11 @@ class MemoryPool
         }
 
         template < typename T >
-        T* Allocate()
+        MemoryPtr<T> Allocate()
         {
             if ( CheckFull() ) 
             {
-                Log::Error( " Memory Pool is full " );
+                Log::Error( " MemoryPool | Full " );
                 return nullptr;
             }
 
@@ -65,39 +68,39 @@ class MemoryPool
             m_IndicesforAllocated.pop();
             m_IndicesforDeallocated.push_back( Index );
 
-            T* Object = new ( m_pStart + Index * m_ObjectSize ) T();
+            MemoryPtr<T> mPtr = new ( m_pStart + Index * m_ObjectSize ) T();
 
-            Log::Info( " Create Object, Address is %p ", Object );
+            Log::Info( " Instance | Address %p | Create new ", Object );
 
-            return Object;
+            return mPtr;
         }
 
         template < typename T >
-        void Deallocate( T* Object )
+        void Deallocate( MemoryPtr<T>& mPtr )
         {
-            int Index = static_cast< int > ( ( reinterpret_cast< char* >( Object ) - m_pStart ) / m_ObjectSize );
+            int Index = static_cast< int > ( ( reinterpret_cast< char* >( mPtr.GetPtr() ) - m_pStart ) / m_ObjectSize );
 
             auto ITR = std::remove( m_IndicesforDeallocated.begin(), m_IndicesforDeallocated.end(), Index );
 
             if ( ITR != m_IndicesforDeallocated.end() )
             {
+                Log::Info( " Instance | Address %p | Deallocate ", mPtr.GetPtr() );
+
                 m_IndicesforDeallocated.erase( ITR, m_IndicesforDeallocated.end() );
-                Object->~T();
+                mPtr.Destruct();
                 m_IndicesforAllocated.push( Index );
-                
-                Log::Info( " Deallocate Object, Address is %p ", Object );
             }
             else
             {
-                Log::Error( " Invalid deallocation request " );
+                Log::Error( " Instancee | Invalid deallocation request " );
             }
         }
 
         template < typename T >
-        bool CheckInstance( T* Object )
+        bool CheckInstance( MemoryPtr<T>& mPtr )
         {
-            if ( sizeof( Object ) != m_ObjectSize ) return false;
-            if ( static_cast< size_t >( reinterpret_cast< char* >( Object ) - m_pStart ) > m_TotalSize - m_ObjectSize ) return false;
+            if ( sizeof( mPtr.Access() ) != m_ObjectSize ) return false;
+            if ( static_cast< size_t >( reinterpret_cast< char* >( mPtr.GetPtr() ) - m_pStart ) > m_TotalSize - m_ObjectSize ) return false;
             return true;
         }
 
