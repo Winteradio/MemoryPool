@@ -35,10 +35,10 @@ class MemoryPtr
 
     public :
         T& operator*() { return *m_Ptr; }
-        T& Access() { return *m_Ptr; }
-
-    private :
-        T*& GetPtr() { return m_Ptr; }
+        T& GetInstance() { return *m_Ptr; }
+        const T*& GetPtr() { return m_Ptr; }
+        
+    public :
         void SetPtr( T* otherPtr ) { m_Ptr = otherPtr; }
         void Destruct() { if ( m_Ptr != nullptr ) m_Ptr->~T(); }
 

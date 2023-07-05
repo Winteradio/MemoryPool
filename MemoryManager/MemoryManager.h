@@ -107,7 +107,7 @@ class MemoryManager
             {
                 if ( static_cast< size_t >( reinterpret_cast< char* >( mPtr.GetPtr() ) - memoryPool->GetStartPtr() ) > memoryPool->GetTotalSize() - memoryPool->GetObjectSize() )
                 {
-                    Log::Warn( " Instance | Start Pointer %p | This memoryPool do not have the Object ", memoryPool->GetStartPtr() );
+                    Log::Warn( " Instance | Type %s | Start Pointer %p | This memoryPool do not have the Object ", typeid( T ).name(), memoryPool->GetStartPtr() );
                     continue;
                 }
 

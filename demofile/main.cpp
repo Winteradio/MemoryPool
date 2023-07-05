@@ -2,8 +2,18 @@
 #include <LogProject/Log.h>
 #include <iostream>
 
-struct Object
+struct IObject
 {
+    public :
+        IObject() {};
+        virtual ~IObject() {};
+};
+
+struct Object : public IObject
+{
+    public :
+        Object() : IObject() {};
+        virtual ~Object() {};
 };
 
 #ifdef _WIN32
@@ -24,15 +34,16 @@ int main()
         MemoryManager::GetHandle().Create<Object>();
     }
 
-    MemoryPtr<Object> mpValue = MemoryManager::GetHandle().Create<Object>();
-    Log::Info(" Test Object | Type %s | Address %p ", typeid( mpValue.Access() ).name(), mpValue );
+    MemoryPtr<Object> ObValue = MemoryManager::GetHandle().Create<Object>();
+    MemoryPtr<IObject> IObValue = ObValue.GetPtr();
+    Log::Info(" Test Object | Type %s | Address %p ", typeid( ObValue.GetInstance() ).name(), ObValue.GetPtr() );
 
     for ( int i = 0; i < 3; i++ )
     {
         MemoryManager::GetHandle().Create<Object>();
     }
 
-    MemoryManager::GetHandle().Delete<Object>( mpValue );
+    MemoryManager::GetHandle().Delete<Object>( ObValue );
 
     for ( int i = 0; i < 6; i++ )
     {
