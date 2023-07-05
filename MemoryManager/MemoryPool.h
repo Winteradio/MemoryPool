@@ -18,7 +18,7 @@ class MemoryPool : public IMemoryPool
         {
             if ( m_TotalSize == 0 ) 
             {
-                Log::Error( " MemoryPool | Please set the size " );
+                Log::Error( " MemoryPool | Type %s | Please set the size ", typeid( T ).name() );
                 return;
             }
 
@@ -48,7 +48,7 @@ class MemoryPool : public IMemoryPool
                 m_ForAllocated.push( Index );
                 m_ForDeallocated.pop_back();
 
-                Log::Info( " Instance | Address %p | Deallocate ", pObject );
+                Log::Info( " Instance | Type %s | Address %p | Deallocate ", typeid( T ).name(), pObject );
             }
 
             std::free( m_pStart );
@@ -62,12 +62,12 @@ class MemoryPool : public IMemoryPool
         {
             if ( m_TotalSize == 0 ) 
             {
-                Log::Info( " MemoryPool | Change size 0 to %zu ", NewSize );
+                Log::Info( " MemoryPool | Type %s | Change size 0 to %zu ", typeid( T ).name(), NewSize );
                 *( size_t* )&m_TotalSize = NewSize;                                            
             }
             else
             {
-                Log::Warn( " MemoryPool | The size is already setted " );
+                Log::Warn( " MemoryPool | Type %s | The size is already setted ", typeid( T ).name() );
             }
         }
 

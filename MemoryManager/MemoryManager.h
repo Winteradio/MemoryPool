@@ -68,7 +68,7 @@ class MemoryManager
         }
 
         template< typename T, typename... Args >
-        MemoryPtr<T> Allocate( Args&&... args)
+        MemoryPtr<T> Create( Args&&... args)
         {
             if ( !HasList<T>() ) CreateList<T>();
             if ( !HasMemoryPool<T>() ) CreateMemoryPool<T>();
@@ -93,11 +93,11 @@ class MemoryManager
             }
 
             CreateMemoryPool<T>();
-            return Allocate<T>( std::forward<Args>(args)...);
+            return Create<T>( std::forward<Args>(args)...);
         }
 
         template< typename T >
-        void Deallocate( MemoryPtr<T>& mPtr )
+        void Delete( MemoryPtr<T>& mPtr )
         {
             if ( !HasList<T>() ) return;
             if ( !HasMemoryPool<T>() ) return;
@@ -117,7 +117,7 @@ class MemoryManager
 
                 if ( ITR != memoryPool->GetForDeallocated().end() )
                 {
-                    Log::Info( " Instance | Type %s | Address %p | Destruct ", typeid( T ).name(), mPtr.GetPtr() );
+                    Log::Info( " Instance | Type %s | Address %p | Delete ", typeid( T ).name(), mPtr.GetPtr() );
 
                     memoryPool->GetForDeallocated().erase( ITR, memoryPool->GetForDeallocated().end() );
                     mPtr.Destruct();

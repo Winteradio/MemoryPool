@@ -4,9 +4,6 @@
 
 struct Object
 {
-    public :
-        Object() { Log::Info(" Create Default Object "); }
-        ~Object() { Log::Info(" Destroy Default Object "); }
 };
 
 #ifdef _WIN32
@@ -24,22 +21,22 @@ int main()
 
     for ( int i = 0; i < 3; i++ )
     {
-        MemoryManager::GetHandle().Allocate<Object>();
+        MemoryManager::GetHandle().Create<Object>();
     }
 
-    MemoryPtr<Object> mpValue = MemoryManager::GetHandle().Allocate<Object>();
+    MemoryPtr<Object> mpValue = MemoryManager::GetHandle().Create<Object>();
     Log::Info(" Test Object | Type %s | Address %p ", typeid( mpValue.Access() ).name(), mpValue );
 
     for ( int i = 0; i < 3; i++ )
     {
-        MemoryManager::GetHandle().Allocate<Object>();
+        MemoryManager::GetHandle().Create<Object>();
     }
 
-    MemoryManager::GetHandle().Deallocate<Object>( mpValue );
+    MemoryManager::GetHandle().Delete<Object>( mpValue );
 
     for ( int i = 0; i < 6; i++ )
     {
-        MemoryManager::GetHandle().Allocate<Object>();
+        MemoryManager::GetHandle().Create<Object>();
     }
 
     MemoryManager::GetHandle().Destroy();
