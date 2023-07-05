@@ -6,7 +6,6 @@
 
 #include <list>
 #include <map>
-#include <typeinfo>
 #include <string>
 
 class MemoryManager

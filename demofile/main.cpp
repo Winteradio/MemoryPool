@@ -35,7 +35,7 @@ int main()
     }
 
     MemoryPtr<Object> ObValue = MemoryManager::GetHandle().Create<Object>();
-    MemoryPtr<IObject> IObValue;
+
     Log::Info(" Test Object | Type %s | Address %p ", typeid( ObValue.GetInstance() ).name(), ObValue.GetPtr() );
 
     for ( int i = 0; i < 3; i++ )
