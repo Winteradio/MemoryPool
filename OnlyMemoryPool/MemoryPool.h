@@ -55,8 +55,8 @@ class MemoryPool
             m_pStart = nullptr;
         }
 
-        template < typename T >
-        MemoryPtr<T> Allocate()
+        template< typename T, typename... Args >
+        MemoryPtr<T> Create( Args&&... args)
         {
             if ( CheckFull() ) 
             {
@@ -68,7 +68,7 @@ class MemoryPool
             m_IndicesforAllocated.pop();
             m_IndicesforDeallocated.push_back( Index );
 
-            MemoryPtr<T> mPtr = new ( m_pStart + Index * m_ObjectSize ) T();
+            MemoryPtr<T> mPtr = new ( m_pStart + Index * m_ObjectSize ) T( std::forward<Args>( args ) ... );
 
             Log::Info( " Instance | Address %p | Create new ", Object );
 
@@ -76,7 +76,7 @@ class MemoryPool
         }
 
         template < typename T >
-        void Deallocate( MemoryPtr<T>& mPtr )
+        void Delete( MemoryPtr<T>& mPtr )
         {
             int Index = static_cast< int > ( ( reinterpret_cast< char* >( mPtr.GetPtr() ) - m_pStart ) / m_ObjectSize );
 
@@ -97,7 +97,7 @@ class MemoryPool
         template < typename T >
         bool CheckInstance( MemoryPtr<T>& mPtr )
         {
-            if ( sizeof( mPtr.Access() ) != m_ObjectSize ) return false;
+            if ( sizeof( mPtr.GetInstance() ) != m_ObjectSize ) return false;
             if ( static_cast< size_t >( reinterpret_cast< char* >( mPtr.GetPtr() ) - m_pStart ) > m_TotalSize - m_ObjectSize ) return false;
             return true;
         }
