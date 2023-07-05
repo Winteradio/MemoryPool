@@ -105,13 +105,13 @@ class MemoryManager
             int Index;
             for ( auto memoryPool : m_Data[ &typeid( T ) ] )
             {
-                if ( static_cast< size_t >( reinterpret_cast< char* >( mPtr.GetPtr() ) - memoryPool->GetStartPtr() ) > memoryPool->GetTotalSize() - memoryPool->GetObjectSize() )
+                if ( static_cast< size_t >( reinterpret_cast< const char* >( mPtr.GetPtr() ) - memoryPool->GetStartPtr() ) > memoryPool->GetTotalSize() - memoryPool->GetObjectSize() )
                 {
                     Log::Warn( " Instance | Type %s | Start Pointer %p | This memoryPool do not have the Object ", typeid( T ).name(), memoryPool->GetStartPtr() );
                     continue;
                 }
 
-                Index = static_cast< int > ( ( reinterpret_cast< char* >( mPtr.GetPtr() ) - memoryPool->GetStartPtr() ) / memoryPool->GetObjectSize() );
+                Index = static_cast< int > ( ( reinterpret_cast< const char* >( mPtr.GetPtr() ) - memoryPool->GetStartPtr() ) / memoryPool->GetObjectSize() );
 
                 auto ITR = std::remove( memoryPool->GetForDeallocated().begin(), memoryPool->GetForDeallocated().end(), Index );
 

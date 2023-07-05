@@ -7,11 +7,13 @@ class MemoryPtr
     private :
         friend class MemoryManager;
 
-    private :
+    public :
         MemoryPtr() : m_Ptr( nullptr ) {};
         MemoryPtr( T* otherPtr ) : m_Ptr( otherPtr ) {};
+        virtual ~MemoryPtr() {};
 
-        MemoryPtr<T>& operator=( const MemoryPtr<T>& otherMPtr )
+        template< typename U >
+        MemoryPtr<T>& operator=( const MemoryPtr<U>& otherMPtr )
         {
             if ( this != otherMPtr && this->m_Ptr != otherMPtr.m_Ptr ) m_Ptr = otherMPtr.m_Ptr;
             return *this;
@@ -31,14 +33,11 @@ class MemoryPtr
         bool operator!=( const MemoryPtr<T>& otherMPtr ) { return m_Ptr != otherMPtr.m_Ptr; }
 
     public :
-        virtual ~MemoryPtr() {};
-
-    public :
         T& operator*() { return *m_Ptr; }
         T& GetInstance() { return *m_Ptr; }
-        const T*& GetPtr() { return m_Ptr; }
+        const T* GetPtr() { return m_Ptr; }
         
-    public :
+    private :
         void SetPtr( T* otherPtr ) { m_Ptr = otherPtr; }
         void Destruct() { if ( m_Ptr != nullptr ) m_Ptr->~T(); }
 
