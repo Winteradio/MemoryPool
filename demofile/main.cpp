@@ -27,30 +27,39 @@ int main()
 {
     Log::Info(" OS | Linux ");
 #endif
-    MemoryManager::GetHandle().SetDefaultSize( 3 );
 
-    for ( int i = 0; i < 3; i++ )
+    try
     {
-        MemoryManager::GetHandle().Create<Object>();
+        MemoryManager::GetHandle().SetDefaultSize( 512 );
+
+        for ( int i = 0; i < 3; i++ )
+        {
+            MemoryManager::GetHandle().Create<Object>();
+        }
+
+        MemoryPtr<Object> ObValue = MemoryManager::GetHandle().Create<Object>();
+
+        Log::Info(" Test Object | Type %s | Address %p ", typeid( ObValue.GetInstance() ).name(), ObValue.GetPtr() );
+
+        for ( int i = 0; i < 3; i++ )
+        {
+            MemoryManager::GetHandle().Create<Object>();
+        }
+
+        MemoryManager::GetHandle().Delete<Object>( ObValue );
+
+        for ( int i = 0; i < 6; i++ )
+        {
+            MemoryManager::GetHandle().Create<Object>();
+        }
+
+        MemoryManager::GetHandle().Destroy();
+    }
+    catch( const std::exception& e )
+    {
+        Log::Error( e.what() );
     }
 
-    MemoryPtr<Object> ObValue = MemoryManager::GetHandle().Create<Object>();
-
-    Log::Info(" Test Object | Type %s | Address %p ", typeid( ObValue.GetInstance() ).name(), ObValue.GetPtr() );
-
-    for ( int i = 0; i < 3; i++ )
-    {
-        MemoryManager::GetHandle().Create<Object>();
-    }
-
-    MemoryManager::GetHandle().Delete<Object>( ObValue );
-
-    for ( int i = 0; i < 6; i++ )
-    {
-        MemoryManager::GetHandle().Create<Object>();
-    }
-
-    MemoryManager::GetHandle().Destroy();
     Log::Print();
     
     return 0;

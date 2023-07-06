@@ -3,6 +3,7 @@
 
 #include <LogProject/Log.h>
 #include <typeinfo>
+#include <stdexcept>
 
 template< typename T >
 class MemoryPtr
@@ -29,22 +30,15 @@ class MemoryPtr
         template< typename U >
         MemoryPtr<T>& operator=( U* otherPtr )
         {
-            try
+            T* CastedPtr = dynamic_cast< T* >( otherPtr );
+            if ( CastedPtr == nullptr )
             {
-                T* CastedPtr = dynamic_cast< T* >( otherPtr );
-                if ( CastedPtr == nullptr )
-                {
-                    throw std::runtime_error("Type mismatch");
-                }
-                else
-                {
-                    if ( m_Ptr != nullptr ) Destruct();
-                    this->m_Ptr = CastedPtr;
-                }
+                throw std::runtime_error(" Type %s | Type %s is not same ", typeid( T ).name(), typeid( U ).name() );
             }
-            catch(const std::exception& e)
+            else
             {
-                Log::Error(" Type %s | Type %s is not same ", typeid( T ).name(), typeid( U ).name() );
+                if ( m_Ptr != nullptr ) Destruct();
+                this->m_Ptr = CastedPtr;
             }
             return *this;
         }
