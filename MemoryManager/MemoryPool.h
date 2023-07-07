@@ -80,7 +80,7 @@ class MemoryPool : public IMemoryPool
         Vector& GetForDeallocated() { return m_ForDeallocated; }
         
     private :
-        char* m_pStart;
+        char* m_pStart = nullptr;
 
         const size_t m_TotalSize;
         const size_t m_ObjectSize;

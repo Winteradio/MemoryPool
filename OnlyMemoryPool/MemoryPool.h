@@ -115,7 +115,7 @@ class MemoryPool
     private :
         const size_t m_TotalSize;
         const size_t m_ObjectSize;
-        char* m_pStart;
+        char* m_pStart = nullptr;
 
         Queue m_IndicesforAllocated;
         Vector m_IndicesforDeallocated;

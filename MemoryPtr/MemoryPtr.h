@@ -36,7 +36,7 @@ class MemoryPtr
             }
             else
             {
-                if ( m_Ptr != nullptr ) Destruct();
+                Destruct();
                 m_Ptr = mainPtr;
             }
             return *this;
@@ -62,10 +62,16 @@ class MemoryPtr
 
     private :
         void SetPtr( T* otherPtr ) { m_Ptr = otherPtr; }
-        void Destruct() { if ( m_Ptr != nullptr ) m_Ptr->~T(); }
+        void Destruct() 
+        { 
+            if ( m_Ptr != nullptr ) 
+            {
+                m_Ptr->~T();
+            } 
+        }
 
     private:
-        T* m_Ptr;
+        T* m_Ptr = nullptr;
 };
 
 #endif // __MEMORYPTR_H__
