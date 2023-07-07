@@ -58,6 +58,11 @@ class MemoryPool
         template< typename T, typename... Args >
         MemoryPtr<T> Create( Args&&... args)
         {
+            if ( sizeof( T ) > m_DefaultSize ) 
+            {
+                throw Except(" Type %s | The Size %zu is over than Default Size %zu ", typeid( T ).name(), sizeof( T ), m_DefaultSize );
+            }
+            
             if ( CheckFull() ) 
             {
                 Log::Error( " MemoryPool | Full " );
@@ -78,6 +83,11 @@ class MemoryPool
         template < typename T >
         void Delete( MemoryPtr<T>& mPtr )
         {
+            if ( sizeof( T ) > m_DefaultSize ) 
+            {
+                throw Except(" Type %s | The Size %zu is over than Default Size %zu ", typeid( T ).name(), sizeof( T ), m_DefaultSize );
+            }
+
             int Index = static_cast< int > ( ( reinterpret_cast< char* >( mPtr.GetPtr() ) - m_pStart ) / m_ObjectSize );
 
             auto ITR = std::remove( m_IndicesforDeallocated.begin(), m_IndicesforDeallocated.end(), Index );

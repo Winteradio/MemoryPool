@@ -18,7 +18,7 @@ class MemoryPool : public IMemoryPool
         {
             if ( m_TotalSize == 0 ) 
             {
-                Log::Error( " MemoryPool | Type %s | Please set the size ", typeid( T ).name() );
+                Log::Warn( " MemoryPool | Type %s | Please set the size ", typeid( T ).name() );
                 return;
             }
 

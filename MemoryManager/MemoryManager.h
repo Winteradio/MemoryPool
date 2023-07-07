@@ -69,7 +69,10 @@ class MemoryManager
         template< typename T, typename... Args >
         MemoryPtr<T> Create( Args&&... args)
         {
-            if ( sizeof( T ) > m_DefaultSize ) throw std::runtime_error(" Type %s | The Size %zu is over than Default Size %zu ", typeid( T ).name(), sizeof( T ), m_DefaultSize );
+            if ( sizeof( T ) > m_DefaultSize ) 
+            {
+                throw Except(" Type %s | The Size %zu is over than Default Size %zu ", typeid( T ).name(), sizeof( T ), m_DefaultSize );
+            }
 
             if ( !HasList<T>() ) CreateList<T>();
             if ( !HasMemoryPool<T>() ) CreateMemoryPool<T>();
@@ -100,7 +103,10 @@ class MemoryManager
         template< typename T >
         void Delete( MemoryPtr<T>& mPtr )
         {
-            if ( sizeof( T ) > m_DefaultSize ) throw std::runtime_error(" Type %s | The Size %zu is over than Default Size %zu ", typeid( T ).name(), sizeof( T ), m_DefaultSize );
+            if ( sizeof( T ) > m_DefaultSize ) 
+            {
+                throw Except(" Type %s | The Size %zu is over than Default Size %zu ", typeid( T ).name(), sizeof( T ), m_DefaultSize );
+            }
 
             if ( !HasList<T>() ) return;
             if ( !HasMemoryPool<T>() ) return;
@@ -128,7 +134,7 @@ class MemoryManager
                 }
                 else
                 {
-                    Log::Error( " Instance | Type %s | Address %p | Invalid deallocation request ", typeid( T ).name(), mPtr.GetPtr() );
+                    Log::Warn( " Instance | Type %s | Address %p | Invalid deletion request ", typeid( T ).name(), mPtr.GetPtr() );
                 }
 
                 break;
