@@ -71,7 +71,7 @@ class MemoryManager
         {
             if ( sizeof( T ) > m_DefaultSize ) 
             {
-                throw Except(" Type %s | The Size %zu is over than Default Size %zu ", typeid( T ).name(), sizeof( T ), m_DefaultSize );
+                throw Except(" %s | Type %s | The Size %zu is over than Default Size %zu ", __FUNCTION__, typeid( T ).name(), sizeof( T ), m_DefaultSize );
             }
 
             if ( !HasList<T>() ) CreateList<T>();
@@ -105,7 +105,7 @@ class MemoryManager
         {
             if ( sizeof( T ) > m_DefaultSize ) 
             {
-                throw Except(" Type %s | The Size %zu is over than Default Size %zu ", typeid( T ).name(), sizeof( T ), m_DefaultSize );
+                throw Except(" %s | Type %s | The Size %zu is over than Default Size %zu ", __FUNCTION__, typeid( T ).name(), sizeof( T ), m_DefaultSize );
             }
 
             if ( !HasList<T>() ) return;

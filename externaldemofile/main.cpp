@@ -45,12 +45,13 @@ void Example()
 {
         MemoryManager::GetHandle().SetDefaultSize( 512 );
 
+        MemoryPtr<Object> Value = new Object;
+
         MemoryPtr<Object> ObValue = MemoryManager::GetHandle().Create<Object>();
         MemoryPtr<IObject> IObValue = MemoryManager::GetHandle().Create<IObject>();
 
         //IObValue = new Other; Compile error, cause other and IObvalue have not any relation-ship for dynamic_casting
 
-        /*
         for ( int i = 0; i < 3; i++ )
         {
             MemoryManager::GetHandle().Create<Object>();
@@ -63,11 +64,12 @@ void Example()
 
         MemoryManager::GetHandle().Delete<Object>( ObValue );
 
+        MemoryManager::GetHandle().Delete<Object>( Value );
+
         for ( int i = 0; i < 6; i++ )
         {
             MemoryManager::GetHandle().Create<Object>();
         }
-        */
 
         MemoryManager::GetHandle().Destroy();
 }

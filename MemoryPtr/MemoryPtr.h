@@ -56,8 +56,22 @@ class MemoryPtr
         }
 
     public :
-        T& operator*() { return *m_Ptr; }
-        T& GetInstance() { return *m_Ptr; }
+        T& operator*() 
+        {
+            if ( m_Ptr == nullptr )
+            {
+                throw Except(" %s | Type %s | Memory Pointer has not address ", __FUNCTION__, typeid( T ).name() );
+            }
+            return *m_Ptr; 
+        }
+        T& GetInstance()
+        {
+            if ( m_Ptr == nullptr )
+            {
+                throw Except(" Type %s | Memory Pointer has not address ", __FUNCTION__, typeid( T ).name() );
+            }
+            return *m_Ptr; 
+        }
         const T* GetPtr() { return m_Ptr; }
 
     private :
