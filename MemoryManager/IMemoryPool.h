@@ -6,9 +6,6 @@
 #include <queue>
 #include <vector>
 
-using Queue = std::queue<int>;
-using Vector = std::vector<int>;
-
 class IMemoryPool
 {
     public:
@@ -25,9 +22,6 @@ class IMemoryPool
         virtual const size_t& GetObjectSize() = 0;
         
         virtual char*& GetStartPtr() = 0;
-        
-        virtual Queue& GetForAllocated() = 0;
-        virtual Vector& GetForDeallocated() = 0;
 };
 
 #endif // __IMEMORYPOOL_H__

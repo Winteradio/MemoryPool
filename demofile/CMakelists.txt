@@ -33,7 +33,7 @@ LIST(APPEND SRCS
 )
 
 LIST(APPEND INCS 
-    ${MEMORYPTR_DIR} ${MEMORYMANAGER_DIR} )
+    ${MEMORYPTR_DIR} ${MEMORYMANAGER_DIR} ${MEMORYEXCEPT_DIR} )
 
 MESSAGE(STATUS "Setting Done ")
 # ----------------------------------------------- #

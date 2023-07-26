@@ -46,7 +46,7 @@ void Example()
         MemoryManager::GetHandle().SetDefaultSize( 512 );
 
         MemoryPtr<Object> Value = new Object;
-
+        
         MemoryPtr<Object> ObValue = MemoryManager::GetHandle().Create<Object>();
         MemoryPtr<IObject> IObValue = MemoryManager::GetHandle().Create<IObject>();
 

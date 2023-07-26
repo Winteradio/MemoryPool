@@ -19,6 +19,8 @@ void MemoryManager::Destroy()
             delete memoryPool;
         }
     }
+
+    m_Data.clear();
 }
 
 void MemoryManager::SetDefaultSize( int Size )
