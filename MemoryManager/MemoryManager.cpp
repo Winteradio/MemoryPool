@@ -11,14 +11,16 @@ void MemoryManager::Init()
 
 void MemoryManager::Destroy()
 {
-    for ( auto [ Type, memoryList ] : m_Data )
+    for ( auto [ Type, iMemoryPoolList ] : m_IMemoryPoolListTypeMap )
     {
-        for ( auto memoryPool : memoryList )
+        for ( auto memoryPool : iMemoryPoolList )
         {
             memoryPool->Destroy();
             delete memoryPool;
         }
     }
+
+    m_IMemoryPoolListTypeMap.clear();
 }
 
 void MemoryManager::SetDefaultSize( int Size )

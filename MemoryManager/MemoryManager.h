@@ -10,8 +10,8 @@
 
 class MemoryManager
 {
-    using MemoryPoolList = std::list< IMemoryPool* >;
-    using TypeMemoryPoolList = std::map< const std::type_info*, MemoryPoolList >;
+    using IMemoryPoolList = std::list< IMemoryPool* >;
+    using IMemoryPoolListTypeMap = std::map< const std::type_info*, IMemoryPoolList >;
 
     private :
         MemoryManager();
@@ -27,9 +27,9 @@ class MemoryManager
         template< typename T >
         bool HasList()
         {
-            if ( m_Data.find( &typeid( T ) ) == m_Data.end() ) 
+            if ( m_IMemoryPoolListTypeMap.find( &typeid( T ) ) == m_IMemoryPoolListTypeMap.end() ) 
             {
-                Log::Warn( " MemoryPool List | Type %s | Do not have this ", typeid( T ).name() );
+                Log::Warn( " MemoryPool List | %s | Do not have this type " , typeid( T ).name() );
                 return false;
             }
             else return true;
@@ -38,9 +38,9 @@ class MemoryManager
         template< typename T >
         bool HasMemoryPool()
         {
-            if ( m_Data[ &typeid( T ) ].empty() ) 
+            if ( m_IMemoryPoolListTypeMap[ &typeid( T ) ].empty() ) 
             {
-                Log::Warn( " MemoryPool | Type %s | Do not have this ", typeid( T ).name() );
+                Log::Warn( " MemoryPool | %s | Do not have this type " , typeid( T ).name() );
                 return false;
             }
             else return true;
@@ -49,101 +49,77 @@ class MemoryManager
         template< typename T >
         void CreateMemoryPool()
         {
-            IMemoryPool* memoryPool = new MemoryPool<T>( m_DefaultSize );
-            memoryPool->Init();
-            m_Data[ &typeid( T ) ].push_back( memoryPool );
+            IMemoryPool* iMemoryPool = new MemoryPool<T>( m_DefaultSize );
+            iMemoryPool->Init();
+            m_IMemoryPoolListTypeMap[ &typeid( T ) ].push_back( iMemoryPool );
 
-            Log::Info( " MemoryPool | Type %s | Create new ", typeid( T ).name() );
-            Log::Info( " MemoryPool | Address %p | Start Pointer %p ", memoryPool, memoryPool->GetStartPtr() );
+            Log::Info( " MemoryPool | %s | %p - %p | Create new ", typeid( T ).name(), iMemoryPool, iMemoryPool->GetStartPtr() );
         }
 
         template< typename T >
         void CreateList()
         {
-            m_Data[ &typeid( T ) ] = MemoryPoolList();
+            m_IMemoryPoolListTypeMap[ &typeid( T ) ] = IMemoryPoolList();
 
-            Log::Info( " MemoryPool List | Type %s | Create new ", typeid( T ).name() );
-            Log::Info( " MemoryPool List | Address %p ", &m_Data[ &typeid( T )] );
+            Log::Info( " MemoryPool List | %s | Create new ", typeid( T ).name() );
         }
 
         template< typename T, typename... Args >
         MemoryPtr<T> Create( Args&&... args)
         {
-            if ( sizeof( T ) > m_DefaultSize ) 
-            {
-                throw Except(" %s | Type %s | The Size %zu is over than Default Size %zu ", __FUNCTION__, typeid( T ).name(), sizeof( T ), m_DefaultSize );
-            }
-
             if ( !HasList<T>() ) CreateList<T>();
             if ( !HasMemoryPool<T>() ) CreateMemoryPool<T>();
 
-            for ( auto ITR = m_Data[ &typeid( T ) ].rbegin(); ITR != m_Data[ &typeid( T ) ].rend(); ++ITR )
+            MemoryPool<T>* memoryPool = static_cast< MemoryPool<T>* >( m_IMemoryPoolListTypeMap[ &typeid( T ) ].back() );
+
+            MemoryPtr<T> mPtr;
+            try
             {
-                IMemoryPool*& memoryPool = *ITR;
-
-                if ( memoryPool->CheckFull() ) continue;
-                else
-                {
-                    int Index = memoryPool->GetForAllocated().front();
-                    memoryPool->GetForAllocated().pop();
-                    memoryPool->GetForDeallocated().push_back( Index );
-
-                    MemoryPtr<T> mPtr = new ( memoryPool->GetStartPtr() + Index * memoryPool->GetObjectSize() ) T( std::forward<Args>( args ) ... );
-
-                    Log::Info( " Instance | Type %s | Address %p | Create new ", typeid( T ).name(), mPtr.GetPtr() );
-
-                    return mPtr;  
-                }
+                mPtr = memoryPool->Construct( std::forward<Args>( args ) ... );
+            }
+            catch( const Except& e )
+            {
+                Log::Error( e.what() );
+                CreateMemoryPool<T>();
+                Create<T>( std::forward<Args>( args ) ... );
             }
 
-            CreateMemoryPool<T>();
-            return Create<T>( std::forward<Args>(args)...);
+            return mPtr;
         }
 
         template< typename T >
         void Delete( MemoryPtr<T>& mPtr )
         {
-            if ( sizeof( T ) > m_DefaultSize ) 
-            {
-                throw Except(" %s | Type %s | The Size %zu is over than Default Size %zu ", __FUNCTION__, typeid( T ).name(), sizeof( T ), m_DefaultSize );
-            }
-
             if ( !HasList<T>() ) return;
             if ( !HasMemoryPool<T>() ) return;
 
-            int Index;
-            for ( auto memoryPool : m_Data[ &typeid( T ) ] )
+            bool Check = false;
+
+            for ( auto iMemoryPool : m_IMemoryPoolListTypeMap[ &typeid( T ) ] )
             {
-                if ( static_cast< size_t >( reinterpret_cast< const char* >( mPtr.GetPtr() ) - memoryPool->GetStartPtr() ) > memoryPool->GetTotalSize() - memoryPool->GetObjectSize() )
+                try
                 {
-                    Log::Warn( " Instance | Type %s | Start Pointer %p | This memoryPool do not have the Object ", typeid( T ).name(), memoryPool->GetStartPtr() );
+                    MemoryPool<T>* memoryPool = static_cast< MemoryPool<T>* >( iMemoryPool );
+                    memoryPool->Destruct( mPtr.GetPtr() );
+                    Check = true;
+                    break;
+                }
+                catch( const Except& e )
+                {
+                    Log::Error( e.what() );
                     continue;
                 }
+            }
 
-                Index = static_cast< int > ( ( reinterpret_cast< const char* >( mPtr.GetPtr() ) - memoryPool->GetStartPtr() ) / memoryPool->GetObjectSize() );
-
-                auto ITR = std::remove( memoryPool->GetForDeallocated().begin(), memoryPool->GetForDeallocated().end(), Index );
-
-                if ( ITR != memoryPool->GetForDeallocated().end() )
-                {
-                    Log::Info( " Instance | Type %s | Address %p | Delete ", typeid( T ).name(), mPtr.GetPtr() );
-
-                    memoryPool->GetForDeallocated().erase( ITR, memoryPool->GetForDeallocated().end() );
-                    mPtr.Destruct();
-                    memoryPool->GetForAllocated().push( Index );
-                }
-                else
-                {
-                    Log::Warn( " Instance | Type %s | Address %p | Invalid deletion request ", typeid( T ).name(), mPtr.GetPtr() );
-                }
-
-                break;
+            if ( !Check )
+            {
+                Log::Warn( " Instance | %s | %p | This instance is not existed on memory manager ", typeid( T ).name() );
             }
         }
 
     private :
         static MemoryManager m_MemoryManager;
-        TypeMemoryPoolList m_Data;
+        IMemoryPoolListTypeMap m_IMemoryPoolListTypeMap;
         size_t m_DefaultSize;
 };
 

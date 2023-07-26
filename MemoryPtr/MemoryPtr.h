@@ -27,32 +27,35 @@ class MemoryPtr
         MemoryPtr<T>& operator=( const MemoryPtr<U>& otherMPtr ) { return operator=( otherMPtr.m_Ptr ); }
 
         template< typename U >
-        MemoryPtr<T>& operator=( U* otherPtr )
+        MemoryPtr<T>& operator=( U*& otherPtr )
         {
             T* mainPtr = dynamic_cast< T* >( otherPtr );
             if ( mainPtr == nullptr )
             {
-                throw Except(" Type %s | Type %s is not same ", typeid( T ).name(), typeid( U ).name() );
+                throw Except( " MPTR | %s | %s | No inheritance relationship with %s ", __FUNCTION__, typeid( T ).name(), typeid( U ).name() );
             }
-            else
+
+            if ( m_Ptr != nullptr )
             {
-                Destruct();
-                m_Ptr = mainPtr;
+                throw Except( " MPTR | %s | %s | Already pointer existed ", __FUNCTION__, typeid( T ).name() );
             }
+            
+            m_Ptr = otherPtr;
             return *this;
         }
 
         template< typename U >
-        bool operator==( const MemoryPtr<U>& otherMPtr ) 
-        {
-            if ( typeid( T ) == typeid( U ) ) return true;
-            else m_Ptr == otherMPtr.m_Ptr; 
+        bool operator==( const MemoryPtr<U>& otherMPtr ) const 
+        { 
+            if ( typeid( T ) != typeid( U ) ) return false;
+            if ( m_Ptr != otherMPtr.m_Ptr ) return false;
+            else return true;
         }
 
         template< typename U >
-        bool operator!=( const MemoryPtr<U>& otherMPtr ) 
+        bool operator!=( const MemoryPtr<U>& otherMPtr ) const
         {
-            return !operator==( otherMPtr );
+            return !operator==otherMPtr;
         }
 
     public :
@@ -60,29 +63,24 @@ class MemoryPtr
         {
             if ( m_Ptr == nullptr )
             {
-                throw Except(" %s | Type %s | Memory Pointer has not address ", __FUNCTION__, typeid( T ).name() );
+                throw Except(" MPTR | %s | %s | Memory Pointer has not address ", __FUNCTION__, typeid( T ).name() );
             }
             return *m_Ptr; 
         }
+
         T& GetInstance()
         {
             if ( m_Ptr == nullptr )
             {
-                throw Except(" Type %s | Memory Pointer has not address ", __FUNCTION__, typeid( T ).name() );
+                throw Except(" MPTR | %s | %s | Memory Pointer has not address ", __FUNCTION__, typeid( T ).name() );
             }
             return *m_Ptr; 
         }
-        const T* GetPtr() { return m_Ptr; }
 
     private :
+        
+        T* GetPtr() { return m_Ptr; }
         void SetPtr( T* otherPtr ) { m_Ptr = otherPtr; }
-        void Destruct() 
-        { 
-            if ( m_Ptr != nullptr ) 
-            {
-                m_Ptr->~T();
-            } 
-        }
 
     private:
         T* m_Ptr = nullptr;

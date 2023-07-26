@@ -7,11 +7,9 @@ struct IObject
     public :
         IObject() 
         {
-            Log::Info(" Create IObject!! ");
         };
         virtual ~IObject() 
         {
-            Log::Info(" Delete IObject!! ");
         };
 };
 
@@ -20,11 +18,9 @@ struct Object : public IObject
     public :
         Object() : IObject() 
         {
-            Log::Info(" Create Object!! ");
         };
         virtual ~Object() 
         {
-            Log::Info(" Delete Object!! ");
         };
 };
 
@@ -33,43 +29,26 @@ struct Other
     public :
         Other()
         {
-            Log::Info(" Create Other!! ");
         };
         ~Other()
         {
-            Log::Info(" Delete Other!! ");
         };
 };
 
 void Example()
 {
-        MemoryManager::GetHandle().SetDefaultSize( 512 );
+        MemoryManager::GetHandle().SetDefaultSize( 16 );
 
         MemoryPtr<Object> Value = new Object;
-
         MemoryPtr<Object> ObValue = MemoryManager::GetHandle().Create<Object>();
         MemoryPtr<IObject> IObValue = MemoryManager::GetHandle().Create<IObject>();
 
+        // IObValue = ObValue; Runtime error catch, cause IObValue already has pointer
+
+        IObject* Ptr = new IObject;
+        MemoryPtr<IObject> NIObValue = ObValue;
+
         //IObValue = new Other; Compile error, cause other and IObvalue have not any relation-ship for dynamic_casting
-
-        for ( int i = 0; i < 3; i++ )
-        {
-            MemoryManager::GetHandle().Create<Object>();
-        }
-
-        for ( int i = 0; i < 3; i++ )
-        {
-            MemoryManager::GetHandle().Create<Object>();
-        }
-
-        MemoryManager::GetHandle().Delete<Object>( ObValue );
-
-        MemoryManager::GetHandle().Delete<Object>( Value );
-
-        for ( int i = 0; i < 6; i++ )
-        {
-            MemoryManager::GetHandle().Create<Object>();
-        }
 
         MemoryManager::GetHandle().Destroy();
 }
