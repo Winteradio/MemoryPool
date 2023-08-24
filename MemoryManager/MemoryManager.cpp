@@ -11,7 +11,7 @@ void MemoryManager::Init()
 
 void MemoryManager::Destroy()
 {
-    for ( auto [ Type, iMemoryPoolList ] : m_IMemoryPoolListTypeMap )
+    for ( auto [ Type, iMemoryPoolList ] : m_IMemoryPoolListTypeUnMap )
     {
         for ( auto memoryPool : iMemoryPoolList )
         {
@@ -20,7 +20,7 @@ void MemoryManager::Destroy()
         }
     }
 
-    m_IMemoryPoolListTypeMap.clear();
+    m_IMemoryPoolListTypeUnMap.clear();
 }
 
 void MemoryManager::SetDefaultSize( int Size )

@@ -5,13 +5,13 @@
 #include "MemoryPtr.h"
 
 #include <list>
-#include <map>
+#include <unordered_map>
 #include <string>
 
 class MemoryManager
 {
     using IMemoryPoolList = std::list< IMemoryPool* >;
-    using IMemoryPoolListTypeMap = std::map< const std::type_info*, IMemoryPoolList >;
+    using IMemoryPoolListTypeUnMap = std::unordered_map< const std::type_info*, IMemoryPoolList >;
 
     private :
         MemoryManager();
@@ -27,7 +27,7 @@ class MemoryManager
         template< typename T >
         bool HasList()
         {
-            if ( m_IMemoryPoolListTypeMap.find( &typeid( T ) ) == m_IMemoryPoolListTypeMap.end() ) 
+            if ( m_IMemoryPoolListTypeUnMap.find( &typeid( T ) ) == m_IMemoryPoolListTypeUnMap.end() ) 
             {
                 Log::Warn( " MemoryPool List | %s | Do not have this type " , typeid( T ).name() );
                 return false;
@@ -38,7 +38,7 @@ class MemoryManager
         template< typename T >
         bool HasMemoryPool()
         {
-            if ( m_IMemoryPoolListTypeMap[ &typeid( T ) ].empty() ) 
+            if ( m_IMemoryPoolListTypeUnMap[ &typeid( T ) ].empty() ) 
             {
                 Log::Warn( " MemoryPool | %s | Do not have this type " , typeid( T ).name() );
                 return false;
@@ -51,7 +51,7 @@ class MemoryManager
         {
             IMemoryPool* iMemoryPool = new MemoryPool<T>( m_DefaultSize );
             iMemoryPool->Init();
-            m_IMemoryPoolListTypeMap[ &typeid( T ) ].push_back( iMemoryPool );
+            m_IMemoryPoolListTypeUnMap[ &typeid( T ) ].push_back( iMemoryPool );
 
             Log::Info( " MemoryPool | %s | %p - %p | Create new ", typeid( T ).name(), iMemoryPool, iMemoryPool->GetStartPtr() );
         }
@@ -59,7 +59,7 @@ class MemoryManager
         template< typename T >
         void CreateList()
         {
-            m_IMemoryPoolListTypeMap[ &typeid( T ) ] = IMemoryPoolList();
+            m_IMemoryPoolListTypeUnMap[ &typeid( T ) ] = IMemoryPoolList();
 
             Log::Info( " MemoryPool List | %s | Create new ", typeid( T ).name() );
         }
@@ -70,7 +70,7 @@ class MemoryManager
             if ( !HasList<T>() ) CreateList<T>();
             if ( !HasMemoryPool<T>() ) CreateMemoryPool<T>();
 
-            MemoryPool<T>* memoryPool = static_cast< MemoryPool<T>* >( m_IMemoryPoolListTypeMap[ &typeid( T ) ].back() );
+            MemoryPool<T>* memoryPool = static_cast< MemoryPool<T>* >( m_IMemoryPoolListTypeUnMap[ &typeid( T ) ].back() );
 
             MemoryPtr<T> mPtr;
             try
@@ -95,7 +95,7 @@ class MemoryManager
 
             bool Check = false;
 
-            for ( auto iMemoryPool : m_IMemoryPoolListTypeMap[ &typeid( T ) ] )
+            for ( auto iMemoryPool : m_IMemoryPoolListTypeUnMap[ &typeid( T ) ] )
             {
                 try
                 {
@@ -119,7 +119,7 @@ class MemoryManager
 
     private :
         static MemoryManager m_MemoryManager;
-        IMemoryPoolListTypeMap m_IMemoryPoolListTypeMap;
+        IMemoryPoolListTypeUnMap m_IMemoryPoolListTypeUnMap;
         size_t m_DefaultSize;
 };
 
