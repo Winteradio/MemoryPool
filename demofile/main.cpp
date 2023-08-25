@@ -2,55 +2,47 @@
 #include <LogProject/Log.h>
 #include <iostream>
 
+#include <typeindex>
+
 struct IObject
 {
     public :
-        IObject() 
-        {
-        };
-        virtual ~IObject() 
-        {
-        };
+        IObject() {};
+        virtual ~IObject() {};
+
+        virtual void Action() { Log::Info("IObject"); }
 };
 
 struct Object : public IObject
 {
     public :
-        Object() : IObject() 
-        {
-        };
-        virtual ~Object() 
-        {
-        };
+        Object() : IObject() {};
+        virtual ~Object() {};
+
+        virtual void Action() { Log::Info("Object"); }
 };
 
-struct Other
+MemoryPtr<Object> Change( MemoryPtr<IObject>& Value )
 {
-    public :
-        Other()
-        {
-        };
-        ~Other()
-        {
-        };
-};
+    return Value;
+}
 
 void Example()
 {
-        MemoryManager::GetHandle().SetDefaultSize( 16 );
+    MemoryManager::GetHandle().Init();
 
-        MemoryPtr<Object> Value = new Object;
-        MemoryPtr<Object> ObValue = MemoryManager::GetHandle().Create<Object>();
-        MemoryPtr<IObject> IObValue = MemoryManager::GetHandle().Create<IObject>();
+    MemoryPtr<Object> Value = MemoryManager::GetHandle().Create<Object>();
 
-        // IObValue = ObValue; Runtime error catch, cause IObValue already has pointer
+    MemoryManager::GetHandle().Delete<Object>( Value );
 
-        IObject* Ptr = new IObject;
-        MemoryPtr<IObject> NIObValue = ObValue;
+    //Value.GetInstance(); // "Value" has not the pointer which has just nullptr
 
-        //IObValue = new Other; Compile error, cause other and IObvalue have not any relation-ship for dynamic_casting
+    MemoryPtr<IObject> IValue = Value = MemoryManager::GetHandle().Create<Object>();
 
-        MemoryManager::GetHandle().Destroy();
+    MemoryPtr<Object> NewValue = Change( IValue );
+    NewValue.GetInstance().Action();
+
+    MemoryManager::GetHandle().Destroy();
 }
 
 #ifdef _WIN32

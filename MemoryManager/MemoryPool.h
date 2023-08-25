@@ -69,7 +69,7 @@ class MemoryPool : public IMemoryPool
             return Ptr;  
         }
 
-        void Destruct( T* Ptr )
+        void Destruct( T*& Ptr )
         {
             int Index = static_cast<int>( ( reinterpret_cast<char*>( Ptr ) - GetStartPtr() ) / GetObjectSize() );
 
@@ -77,11 +77,12 @@ class MemoryPool : public IMemoryPool
 
             if ( ITR != m_CanDestruct.end() )
             {
+                Log::Info( " Instance | %s | %p | Delete ", typeid( T ).name(), Ptr );
+                
                 m_CanDestruct.erase( ITR, m_CanDestruct.end() );
                 Ptr->~T();
+                Ptr = nullptr;
                 m_CanConstruct.push( Index );
-
-                Log::Info( " Instance | %s | %p | Delete ", typeid( T ).name(), Ptr );
             }
             else
             {

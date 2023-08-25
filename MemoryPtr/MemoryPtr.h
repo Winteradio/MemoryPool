@@ -12,6 +12,12 @@ class MemoryPtr
 
         template< typename U >
         friend class MemoryPtr;
+        
+        T*& GetPtr() { return m_Ptr; }
+        void SetPtr( T* otherPtr ) { m_Ptr = otherPtr; }
+
+    private :
+        T* m_Ptr = nullptr;
 
     public :
         MemoryPtr() : m_Ptr( nullptr ) {}
@@ -21,26 +27,27 @@ class MemoryPtr
         MemoryPtr( U* otherPtr ) { operator=( otherPtr ); }
 
         template< typename U >
-        MemoryPtr( const MemoryPtr<U>& otherMPtr ) { operator=( otherMPtr); };
+        MemoryPtr( const MemoryPtr<U>& otherMPtr ) { operator=( otherMPtr.m_Ptr ); }
 
+    public :
         template< typename U >
         MemoryPtr<T>& operator=( const MemoryPtr<U>& otherMPtr ) { return operator=( otherMPtr.m_Ptr ); }
 
         template< typename U >
         MemoryPtr<T>& operator=( U*& otherPtr )
         {
+            if ( m_Ptr != nullptr )
+            {
+                throw Except( " MPTR | %s | %s | Already pointer existed ", __FUNCTION__, typeid( T ).name() );
+            }
+
             T* mainPtr = dynamic_cast< T* >( otherPtr );
             if ( mainPtr == nullptr )
             {
                 throw Except( " MPTR | %s | %s | No inheritance relationship with %s ", __FUNCTION__, typeid( T ).name(), typeid( U ).name() );
             }
 
-            if ( m_Ptr != nullptr )
-            {
-                throw Except( " MPTR | %s | %s | Already pointer existed ", __FUNCTION__, typeid( T ).name() );
-            }
-            
-            m_Ptr = otherPtr;
+            m_Ptr = mainPtr;
             return *this;
         }
 
@@ -58,7 +65,6 @@ class MemoryPtr
             return !operator==otherMPtr;
         }
 
-    public :
         T& operator*() 
         {
             if ( m_Ptr == nullptr )
@@ -68,22 +74,8 @@ class MemoryPtr
             return *m_Ptr; 
         }
 
-        T& GetInstance()
-        {
-            if ( m_Ptr == nullptr )
-            {
-                throw Except(" MPTR | %s | %s | Memory Pointer has not address ", __FUNCTION__, typeid( T ).name() );
-            }
-            return *m_Ptr; 
-        }
-
-    private :
-        
-        T* GetPtr() { return m_Ptr; }
-        void SetPtr( T* otherPtr ) { m_Ptr = otherPtr; }
-
-    private:
-        T* m_Ptr = nullptr;
+    public :
+        T& GetInstance() { return operator*(); }
 };
 
 #endif // __MEMORYPTR_H__
