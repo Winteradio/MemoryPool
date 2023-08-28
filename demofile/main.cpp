@@ -2,6 +2,11 @@
 #include <LogProject/Log.h>
 #include <iostream>
 
+#include <unordered_set>
+#include <set>
+#include <map>
+#include <unordered_map>
+
 #include <typeindex>
 
 struct IObject
@@ -38,6 +43,10 @@ void Example()
     //Value.GetInstance(); // "Value" has not the pointer which has just nullptr
 
     MemoryPtr<IObject> IValue = Value = MemoryManager::GetHandle().Create<Object>();
+
+    IValue->Action();
+
+    std::unordered_set< const std::type_info* > TypeValue;
 
     MemoryPtr<Object> NewValue = Change( IValue );
     NewValue.GetInstance().Action();

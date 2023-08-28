@@ -39,6 +39,8 @@ void Example()
 
     MemoryPtr<IObject> IValue = Value = MemoryManager::GetHandle().Create<Object>();
 
+    IValue->Action();
+
     MemoryPtr<Object> NewValue = Change( IValue );
     NewValue.GetInstance().Action();
 

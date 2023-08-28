@@ -36,6 +36,11 @@ class MemoryPtr
         template< typename U >
         MemoryPtr<T>& operator=( U*& otherPtr )
         {
+            if ( otherPtr == nullptr )
+            {
+                throw Except( " MPTR | %s | %s | The pointer is empty ", __FUNCTION__, typeid( T ).name() );
+            }
+
             if ( m_Ptr != nullptr )
             {
                 throw Except( " MPTR | %s | %s | Already pointer existed ", __FUNCTION__, typeid( T ).name() );
@@ -72,6 +77,15 @@ class MemoryPtr
                 throw Except(" MPTR | %s | %s | Memory Pointer has not address ", __FUNCTION__, typeid( T ).name() );
             }
             return *m_Ptr; 
+        }
+
+        T*& operator->()
+        {
+            if ( m_Ptr == nullptr )
+            {
+                throw Except(" MPTR | %s | %s | Memory Pointer has not address ", __FUNCTION__, typeid( T ).name() );
+            }
+            return m_Ptr; 
         }
 
     public :
