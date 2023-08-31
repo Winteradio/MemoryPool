@@ -2,8 +2,6 @@
 #include <LogProject/Log.h>
 #include <iostream>
 
-#include <typeindex>
-
 struct IObject
 {
     public :
@@ -11,6 +9,9 @@ struct IObject
         virtual ~IObject() {};
 
         virtual void Action() { Log::Info("IObject"); }
+
+    public :
+        void* Pointer;
 };
 
 struct Object : public IObject
@@ -30,17 +31,29 @@ MemoryPtr<Object> Change( MemoryPtr<IObject>& Value )
 void Example()
 {
     MemoryManager::GetHandle().Init();
+    MemoryManager::GetHandle().SetDefaultSize( 32 );
 
-    MemoryPtr<Object> Value = MemoryManager::GetHandle().Create<Object>();
+    // Test for creating and deleting object
+    for ( int I = 0; I < 2; I++ )
+    {
+        MemoryManager::GetHandle().Create<Object>();
+    }
+    MemoryPtr<Object> Value1 = MemoryManager::GetHandle().Create<Object>();
+    MemoryPtr<Object> Value2 = MemoryManager::GetHandle().Create<Object>();
+    for ( int I = 0; I < 2; I++ )
+    {
+        MemoryManager::GetHandle().Create<Object>();
+    }
+    MemoryManager::GetHandle().Delete<Object>( Value1 );
+    MemoryManager::GetHandle().Delete<Object>( Value2 );
+    for ( int I = 0; I < 2; I++ )
+    {
+        MemoryManager::GetHandle().Create<Object>();
+    }
 
-    MemoryManager::GetHandle().Delete<Object>( Value );
-
-    //Value.GetInstance(); // "Value" has not the pointer which has just nullptr
-
-    MemoryPtr<IObject> IValue = Value = MemoryManager::GetHandle().Create<Object>();
-
+    // Test for casting in MemoryPtr
+    MemoryPtr<IObject> IValue = Value1 = MemoryManager::GetHandle().Create<Object>();
     IValue->Action();
-
     MemoryPtr<Object> NewValue = Change( IValue );
     NewValue.GetInstance().Action();
 

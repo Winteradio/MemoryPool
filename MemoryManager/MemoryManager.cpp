@@ -11,16 +11,14 @@ void MemoryManager::Init()
 
 void MemoryManager::Destroy()
 {
-    for ( auto [ Type, iMemoryPoolList ] : m_IMemoryPoolListTypeUnMap )
+    for ( auto [ PoolPtr, iMemoryPool ] : m_IMemoryPoolMap )
     {
-        for ( auto memoryPool : iMemoryPoolList )
-        {
-            memoryPool->Destroy();
-            delete memoryPool;
-        }
+        Log::Info( " MemoryManager | Pool Ptr %p - Start Ptr %p | Destroy memory pool ", iMemoryPool, iMemoryPool->GetStartPtr() );
+        iMemoryPool->Destroy();
+        delete iMemoryPool;
     }
 
-    m_IMemoryPoolListTypeUnMap.clear();
+    m_IMemoryPoolMap.clear();
 }
 
 void MemoryManager::SetDefaultSize( int Size )

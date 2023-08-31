@@ -16,6 +16,7 @@ class IMemoryPool
         virtual void Init() = 0;
         virtual void Destroy() = 0;
         virtual bool CheckFull() = 0;
+        virtual bool CheckEmpty() = 0;
 
     public :
         virtual const size_t& GetTotalSize() = 0;

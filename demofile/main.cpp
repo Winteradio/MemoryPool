@@ -2,26 +2,23 @@
 #include <LogProject/Log.h>
 #include <iostream>
 
-#include <unordered_set>
-#include <set>
-#include <map>
-#include <unordered_map>
-
-#include <typeindex>
-
 struct IObject
 {
     public :
-        IObject() {};
+        IObject( int Value ) : m_Value( Value ) {};
         virtual ~IObject() {};
 
         virtual void Action() { Log::Info("IObject"); }
+
+    public :
+        int m_Value;
 };
 
 struct Object : public IObject
 {
     public :
-        Object() : IObject() {};
+        Object( int Value ) : IObject( Value ) {};
+        Object() : IObject( 0 ) {};
         virtual ~Object() {};
 
         virtual void Action() { Log::Info("Object"); }
@@ -35,19 +32,31 @@ MemoryPtr<Object> Change( MemoryPtr<IObject>& Value )
 void Example()
 {
     MemoryManager::GetHandle().Init();
+    MemoryManager::GetHandle().SetDefaultSize( 32 );
 
-    MemoryPtr<Object> Value = MemoryManager::GetHandle().Create<Object>();
+    MemoryPtr<IObject> IIValue = MemoryManager::GetHandle().Create<IObject>( true, 10 );
 
-    MemoryManager::GetHandle().Delete<Object>( Value );
+    // Test for creating and deleting object
+    for ( int I = 0; I < 2; I++ )
+    {
+        MemoryManager::GetHandle().Create<Object>();
+    }
+    MemoryPtr<Object> Value1 = MemoryManager::GetHandle().Create<Object>();
+    MemoryPtr<Object> Value2 = MemoryManager::GetHandle().Create<Object>();
+    for ( int I = 0; I < 2; I++ )
+    {
+        MemoryManager::GetHandle().Create<Object>();
+    }
+    MemoryManager::GetHandle().Delete<Object>( Value1 );
+    MemoryManager::GetHandle().Delete<Object>( Value2 );
+    for ( int I = 0; I < 2; I++ )
+    {
+        MemoryManager::GetHandle().Create<Object>();
+    }
 
-    //Value.GetInstance(); // "Value" has not the pointer which has just nullptr
-
-    MemoryPtr<IObject> IValue = Value = MemoryManager::GetHandle().Create<Object>();
-
+    // Test for casting in MemoryPtr
+    MemoryPtr<IObject> IValue = Value1 = MemoryManager::GetHandle().Create<Object>();
     IValue->Action();
-
-    std::unordered_set< const std::type_info* > TypeValue;
-
     MemoryPtr<Object> NewValue = Change( IValue );
     NewValue.GetInstance().Action();
 

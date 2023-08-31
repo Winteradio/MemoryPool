@@ -91,6 +91,7 @@ class MemoryPool : public IMemoryPool
         }
 
         bool CheckFull() { return m_CanConstruct.empty(); }
+        bool CheckEmpty() { return m_CanDestruct.empty(); }
         bool CheckSizeOver() { return m_TotalSize >= m_ObjectSize; }
 
         void SetTotalSize( size_t NewSize )
