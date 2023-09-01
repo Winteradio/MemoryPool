@@ -27,28 +27,19 @@ class MemoryManager
 
     public :
         template< typename T, typename... Args >
-        MemoryPtr<T> Create( bool OnlyOne = false, Args&&... args )
+        MemoryPtr<T> Create( Args&&... args )
         {
-            size_t Size = OnlyOne ? sizeof( T ) : m_DefaultSize;
+            size_t Size = m_DefaultSize;
 
-            if ( !HasList<T>() ) CreateList<T>( Size );
+            return MainCreate<T>( Size, std::forward<Args>( args ) ... );
+        }
 
-            IMemoryPoolPtrList& PoolPtrList = GetList<T>();            
-            for ( auto ITR = PoolPtrList.rbegin(); ITR != PoolPtrList.rend(); ITR++ )
-            {
-                MemoryPool<T>* memoryPool = GetMemoryPool<T>( *ITR );
-                if ( memoryPool->CheckFull() ) continue;
-                else
-                {
-                    MemoryPtr<T> mPtr = memoryPool->Construct( std::forward<Args>( args ) ... );
-                    mPtr.SetPoolPtr( memoryPool->GetStartPtr() );
+        template< typename T, typename... Args>
+        MemoryPtr<T> CreateOne( Args&&... args )
+        {
+            size_t Size = sizeof( T );
 
-                    return mPtr;
-                }
-            }
-            
-            CreateMemoryPool<T>( Size );
-            return Create<T>( OnlyOne, std::forward<Args>( args ) ... );
+            return MainCreate<T>( Size, std::forward<Args>( args) ... );
         }
 
         template< typename T >
@@ -68,6 +59,29 @@ class MemoryManager
         }
 
     private :
+        template< typename T, typename... Args >
+        MemoryPtr<T> MainCreate( size_t Size, Args&&... args )
+        {
+            if ( !HasList<T>() ) CreateList<T>( Size );
+
+            IMemoryPoolPtrList& PoolPtrList = GetList<T>();            
+            for ( auto ITR = PoolPtrList.rbegin(); ITR != PoolPtrList.rend(); ITR++ )
+            {
+                MemoryPool<T>* memoryPool = GetMemoryPool<T>( *ITR );
+                if ( memoryPool->CheckFull() ) continue;
+                else
+                {
+                    MemoryPtr<T> mPtr = memoryPool->Construct( std::forward<Args>( args ) ... );
+                    mPtr.SetPoolPtr( memoryPool->GetStartPtr() );
+
+                    return mPtr;
+                }
+            }
+            
+            CreateMemoryPool<T>( Size );
+            return MainCreate<T>( Size, std::forward<Args>( args ) ... );
+        }
+
         template< typename T >
         IMemoryPoolPtrList& GetList() { return m_TypePoolPtrListMap[ &typeid( T ) ]; }
 

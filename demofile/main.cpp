@@ -34,7 +34,7 @@ void Example()
     MemoryManager::GetHandle().Init();
     MemoryManager::GetHandle().SetDefaultSize( 32 );
 
-    MemoryPtr<IObject> IIValue = MemoryManager::GetHandle().Create<IObject>( true, 10 );
+    MemoryPtr<IObject> IIValue = MemoryManager::GetHandle().CreateOne<IObject>( 10 );
 
     // Test for creating and deleting object
     for ( int I = 0; I < 2; I++ )
