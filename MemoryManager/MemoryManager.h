@@ -86,7 +86,15 @@ class MemoryManager
         IMemoryPoolPtrList& GetList() { return m_TypePoolPtrListMap[ &typeid( T ) ]; }
 
         template< typename T >
-        MemoryPool<T>* GetMemoryPool( char* StartPtr ) { return dynamic_cast< MemoryPool<T>* >( m_IMemoryPoolMap[ StartPtr ] ); }
+        MemoryPool<T>* GetMemoryPool( char* StartPtr ) 
+        {             
+            MemoryPool<T>* memoryPool = dynamic_cast< MemoryPool<T>* >( m_IMemoryPoolMap[ StartPtr ] );
+            if ( memoryPool == nullptr )
+            {
+                throw Except( " MPTR | %s | No inheritance relationship with %s ", __FUNCTION__, typeid( T ).name() );
+            }
+            return memoryPool;
+        }
 
         template< typename T >
         bool HasList()

@@ -5,19 +5,20 @@
 struct IObject
 {
     public :
-        IObject() {};
+        IObject( int Value ) : m_Value( Value ) {};
         virtual ~IObject() {};
 
         virtual void Action() { Log::Info("IObject"); }
 
     public :
-        void* Pointer;
+        int m_Value;
 };
 
 struct Object : public IObject
 {
     public :
-        Object() : IObject() {};
+        Object( int Value ) : IObject( Value ) {};
+        Object() : IObject( 0 ) {};
         virtual ~Object() {};
 
         virtual void Action() { Log::Info("Object"); }
@@ -32,6 +33,8 @@ void Example()
 {
     MemoryManager::GetHandle().Init();
     MemoryManager::GetHandle().SetDefaultSize( 32 );
+
+    MemoryPtr<IObject> IIValue = MemoryManager::GetHandle().CreateOne<IObject>( 10 );
 
     // Test for creating and deleting object
     for ( int I = 0; I < 2; I++ )
@@ -51,6 +54,7 @@ void Example()
         MemoryManager::GetHandle().Create<Object>();
     }
 
+    Value1.GetInstance();
     // Test for casting in MemoryPtr
     MemoryPtr<IObject> IValue = Value1 = MemoryManager::GetHandle().Create<Object>();
     IValue->Action();

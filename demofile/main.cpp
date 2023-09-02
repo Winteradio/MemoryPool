@@ -54,6 +54,7 @@ void Example()
         MemoryManager::GetHandle().Create<Object>();
     }
 
+    // Value1.GetInstance();
     // Test for casting in MemoryPtr
     MemoryPtr<IObject> IValue = Value1 = MemoryManager::GetHandle().Create<Object>();
     IValue->Action();
@@ -62,7 +63,6 @@ void Example()
 
     MemoryManager::GetHandle().Destroy();
 }
-
 #ifdef _WIN32
 #include <windows.h>
 

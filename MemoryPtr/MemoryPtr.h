@@ -16,9 +16,22 @@ class MemoryPtr
         MemoryPtr( U* otherPtr ) { operator=( otherPtr ); }
 
         template< typename U >
-        MemoryPtr( const MemoryPtr<U>& otherMPtr ) { operator=( otherMPtr ); }
+        MemoryPtr( MemoryPtr<U>&& otherMPtr ) { operator=( otherMPtr ); }
+
+        template< typename U >
+        MemoryPtr( const MemoryPtr<U>& otherMPtr ) { operator=( otherMPtr.m_Ptr ); }
 
     public :
+        template< typename U>
+        MemoryPtr<T>& operator=( MemoryPtr<U>&& otherMPtr )
+        {
+            operator=( otherMPtr.m_Ptr );
+
+            SetPoolPtr( otherMPtr.m_PoolPtr );
+
+            return *this;
+        }
+
         template< typename U >
         MemoryPtr<T>& operator=( const MemoryPtr<U>& otherMPtr ) 
         { 
@@ -52,7 +65,7 @@ class MemoryPtr
 
             if ( m_Ptr != nullptr )
             {
-                Log::Warn( " MPTR | %s | %s | Already pointer existed ", __FUNCTION__, typeid( T ).name() );
+                Log::Warn( " MPTR | %s | %s | Already pointer existed %p", __FUNCTION__, typeid( T ).name(), m_Ptr );
                 return false;
             }
 
@@ -108,7 +121,7 @@ class MemoryPtr
         template< typename U >
         friend class MemoryPtr;
         
-    private :
+    public :
         T*& GetPtr() { return m_Ptr; }
         char* GetPoolPtr() { return m_PoolPtr; }
         void SetPtr( T*& otherPtr ) { m_Ptr = otherPtr; }
