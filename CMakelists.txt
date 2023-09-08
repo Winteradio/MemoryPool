@@ -52,7 +52,7 @@ MESSAGE( STATUS "Set Option" )
 ## Set Option for the library is dynamics or static, the main install is memory manager or memory pool and the demo file is installed or not
 OPTION( BUILD_STATIC_LIBRARY "Set option for the library which is static or dynamic" OFF )
 OPTION( INSTALL_MEMORY_MANAGER "Install Memory Manager or Memory Pool" ON )
-OPTION( INSTALL_DEMO_FILE "Install demofile for memorymanager" ON )
+OPTION( INSTALL_DEMO_FILE "Install demofile for memorymanager" OFF )
 ## Set Option for install lib, header files' path
 SET( PREFIX_DIR ${MAIN_DIR}/build/Prefix CACHE PATH "Prefix Path" )
 SET( INCLUDE_DIR ${MAIN_DIR}/build/include CACHE PATH "Header files Path" )

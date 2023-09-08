@@ -45,7 +45,7 @@ MESSAGE( STATUS "Log Project - Linking ... ")
 EXTERNALPROJECT_ADD(
 	LogProject
 	GIT_REPOSITORY GIT_REPOSITORY https://github.com/Winteradio/Log.git
-	GIT_TAG "v2.2.0"
+	GIT_TAG "v2.4.0"
 
 	PREFIX ${PREFIX_DIR}/LogProject
 

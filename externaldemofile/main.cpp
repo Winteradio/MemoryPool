@@ -54,7 +54,7 @@ void Example()
         MemoryManager::GetHandle().Create<Object>();
     }
 
-    Value1.GetInstance();
+    // Value1.GetInstance();
     // Test for casting in MemoryPtr
     MemoryPtr<IObject> IValue = Value1 = MemoryManager::GetHandle().Create<Object>();
     IValue->Action();
@@ -65,7 +65,8 @@ void Example()
 }
 
 #ifdef _WIN32
-#include <windows.h>
+#pragma comment(linker, "/entry:WinMainCRTStartup")
+#pragma comment(linker, "/subsystem:console")
 
 int CALLBACK WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd )
 {
