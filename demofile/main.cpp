@@ -32,6 +32,7 @@ MemoryPtr<Object> Change( MemoryPtr<IObject>& Value )
 void Example()
 {
     MemoryManager::GetHandle().Init();
+    system("pause");
     MemoryManager::GetHandle().SetDefaultSize( 32 );
 
     MemoryPtr<IObject> IIValue = MemoryManager::GetHandle().CreateOne<IObject>( 10 );
@@ -65,6 +66,9 @@ void Example()
 }
 #ifdef _WIN32
 #include <windows.h>
+
+    #pragma comment(linker, "/entry:WinMainCRTStartup")
+    #pragma comment(linker, "/subsystem:console")
 
 int CALLBACK WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd )
 {

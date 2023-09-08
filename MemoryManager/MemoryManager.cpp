@@ -7,6 +7,9 @@ MemoryManager::~MemoryManager() {}
 void MemoryManager::Init()
 {
     if ( m_DefaultSize == 0 ) m_DefaultSize = 512;
+    Log::Info(" MemoryManager | Init DefaultSize %zu ", m_DefaultSize );
+
+    Destroy();
 }
 
 void MemoryManager::Destroy()
