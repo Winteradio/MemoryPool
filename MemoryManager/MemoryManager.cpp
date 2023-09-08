@@ -7,6 +7,8 @@ MemoryManager::~MemoryManager() {}
 void MemoryManager::Init()
 {
     if ( m_DefaultSize == 0 ) m_DefaultSize = 512;
+
+    Destroy();
 }
 
 void MemoryManager::Destroy()

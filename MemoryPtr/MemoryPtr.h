@@ -26,9 +26,7 @@ class MemoryPtr
         MemoryPtr<T>& operator=( MemoryPtr<U>&& otherMPtr )
         {
             operator=( otherMPtr.m_Ptr );
-
             SetPoolPtr( otherMPtr.m_PoolPtr );
-
             return *this;
         }
 
@@ -36,9 +34,7 @@ class MemoryPtr
         MemoryPtr<T>& operator=( const MemoryPtr<U>& otherMPtr ) 
         { 
             operator=( otherMPtr.m_Ptr );
-
             SetPoolPtr( otherMPtr.m_PoolPtr );
-
             return *this;
         }
 
