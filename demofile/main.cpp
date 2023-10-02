@@ -31,8 +31,8 @@ MemoryPtr<Object> Change( MemoryPtr<IObject>& Value )
 
 void Example()
 {
-    MemoryManager::GetHandle().Init();
     system("pause");
+    MemoryManager::GetHandle().Init();
     MemoryManager::GetHandle().SetDefaultSize( 32 );
 
     MemoryPtr<IObject> IIValue = MemoryManager::GetHandle().CreateOne<IObject>( 10 );

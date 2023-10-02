@@ -8,18 +8,18 @@ class MemoryPool : public IMemoryPool
 {
     public :
         MemoryPool() : IMemoryPool(), m_TotalSize( sizeof( T ) ), m_ObjectSize( sizeof (T) ) {}
-        MemoryPool( size_t TotalSize ) : IMemoryPool(), m_TotalSize( TotalSize ), m_ObjectSize( sizeof(T) ) 
-        {
-            if ( TotalSize < m_ObjectSize )
-            {
-                SetTotalSize( m_ObjectSize );
-            }
-        }
+        MemoryPool( size_t TotalSize ) : IMemoryPool(), m_TotalSize( TotalSize ), m_ObjectSize( sizeof(T) ) {}
         virtual ~MemoryPool() {}
 
     public :
         void Init()
         {
+            if ( m_TotalSize != m_ObjectSize )
+            {
+                if ( m_TotalSize < m_ObjectSize ) SetTotalSize( m_ObjectSize );
+                else if ( m_TotalSize % m_ObjectSize != 0 ) SetTotalSize( m_TotalSize - m_TotalSize % m_ObjectSize );
+            }
+
             m_pStart = static_cast<char*>( std::malloc( m_TotalSize ) );
 
             for ( size_t I = 0; I < m_TotalSize / m_ObjectSize; I++ )

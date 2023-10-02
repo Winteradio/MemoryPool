@@ -31,6 +31,7 @@ void MemoryManager::SetDefaultSize( int Size )
 
 void MemoryManager::SetDefaultSize( size_t Size ) 
 {
+    Log::Info( " MemoryManager | Change size %zu to %zu ", m_DefaultSize, Size );
     m_DefaultSize = Size;
 }
 
