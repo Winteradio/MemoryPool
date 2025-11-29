@@ -1,165 +1,93 @@
-# ------ Set Options for Projects --------------- #
-MESSAGE( STATUS "Set Options for Project")
+cmake_minimum_required(VERSION 3.20)
+project(MemoryProject LANGUAGES CXX)
 
-## CMake minimum version required
-CMAKE_MINIMUM_REQUIRED( VERSION 3.20 )
+# ------ Create the library ------ #
+include(${CMAKE_SOURCE_DIR}/external/CMake/Library.cmake)
 
-## Make Project Name
-SET( PROJECT_NAME "MemoryProject" )
-## Project name
-PROJECT( ${PROJECT_NAME} )
+option(BUILD_SHARED_LIBS "Build a shared library instead of a static one" OFF)
 
-if( MSVC )
-    MESSAGE( STATUS "Compiler is ${CMAKE_CXX_COMPILER_ID}")
-    # Use multi-process debugging
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zi /MP")
-    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /Zi /MP")
+set(MAIN_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(HEADER_DIR ${MAIN_DIR}/include)
+set(SOURCE_DIR ${MAIN_DIR}/src)
+set(EXTERNAL_DIR ${MAIN_DIR}/external)
 
-    # Use Windbg as the debugger
-    SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /DEBUG:FULL")
-    SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /DEBUG:FULL")
-    SET(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} /DEBUG /INCREMENTAL:NO")
-ENDIF()
+set(INCLUDE_DIR_LIST
+    ${MAIN_DIR}/include
+)
 
-## Set CXX Compiler Version
-SET( CMAKE_CXX_STANDARD 17 )
+set(HEADER_LIST
+    ${HEADER_DIR}/Memory.h
+    ${HEADER_DIR}/Core.h
+    ${HEADER_DIR}/TimeLimit.h
 
-MESSAGE( STATUS "Setting Done")
-# ----------------------------------------------- #
+    ${HEADER_DIR}/Accessor/IAccessor.h
+    ${HEADER_DIR}/Accessor/Accessor.h
 
+    ${HEADER_DIR}/Collector/GarbageCollector.h
 
+    ${HEADER_DIR}/Container/List.h
+    ${HEADER_DIR}/Container/Arena.h
 
-# ------ Set Path ------------------------------ #
-MESSAGE( STATUS "Set Path ")
+    ${HEADER_DIR}/Storage/IStorage.h
+    ${HEADER_DIR}/Storage/Array.h
+    ${HEADER_DIR}/Storage/ArrayBudget.h
+    ${HEADER_DIR}/Storage/Pool.h
+    ${HEADER_DIR}/Storage/PoolBudget.h
+    ${HEADER_DIR}/Storage/StorageManager.h
 
-## Set Directories
-SET( MAIN_DIR ${CMAKE_SOURCE_DIR} )
-SET( DEMOFILE_DIR ${MAIN_DIR}/externaldemofile )
-SET( MEMORYMANAGER_DIR ${MAIN_DIR}/MemoryManager )
-SET( MEMORYPOOL_DIR ${MAIN_DIR}/OnlyMemoryPool )
-SET( MEMORYPTR_DIR ${MAIN_DIR}/MemoryPtr )
-SET( SOURCE_DIR )
-SET( FOLDER_DIR )
+    ${HEADER_DIR}/Pointer/BasePtr.h
+    ${HEADER_DIR}/Pointer/ObjectPtr.h
+    ${HEADER_DIR}/Pointer/RootPtr.h
+)
 
-MESSAGE( STATUS "Setting Done ")
-# ------------------------------------------------ #
+set(SOURCE_LIST
+    ${SOURCE_DIR}/Core.cpp
+    ${SOURCE_DIR}/TimeLimit.cpp
 
+    ${SOURCE_DIR}/Collector/GarbageCollector.cpp
 
+    ${SOURCE_DIR}/Container/Arena.cpp
 
-# ------- Set Option ----------------------------- #
-MESSAGE( STATUS "Set Option" )
+    ${SOURCE_DIR}/Storage/ArrayBudget.cpp
+    ${SOURCE_DIR}/Storage/PoolBudget.cpp
+    ${SOURCE_DIR}/Storage/StorageManager.cpp
+)
 
-## Set Option for the library is dynamics or static, the main install is memory manager or memory pool and the demo file is installed or not
-OPTION( BUILD_STATIC_LIBRARY "Set option for the library which is static or dynamic" OFF )
-OPTION( INSTALL_MEMORY_MANAGER "Install Memory Manager or Memory Pool" ON )
-OPTION( INSTALL_DEMO_FILE "Install demofile for memorymanager" OFF )
-## Set Option for install lib, header files' path
-SET( PREFIX_DIR ${MAIN_DIR}/build/Prefix CACHE PATH "Prefix Path" )
-SET( INCLUDE_DIR ${MAIN_DIR}/build/include CACHE PATH "Header files Path" )
-SET( ARC_DIR ${MAIN_DIR}/build/arc CACHE PATH "Archieve files Path" )
-SET( LIB_DIR ${MAIN_DIR}/build/lib CACHE PATH "Library files Path" )
-SET( BIN_DIR ${MAIN_DIR}/build/bin CACHE PATH "Execute files Path" )
-SET( CMAKE_BUILD_TYPE Debug CACHE STRING "Build Type" )
+create_library(
+    SHARED_LIBRARY ${BUILD_SHARED_LIBS}
+    TARGET_NAME ${PROJECT_NAME}
+    PUBLIC_HEADERS ${HEADER_LIST}
+    PRIVATE_SOURCES ${SOURCE_LIST}
+)
 
-INCLUDE( Dependency.cmake )
+install_library(
+    TARGET_NAME ${PROJECT_NAME}
+    PUBLIC_HEADERS ${HEADER_LIST}
+    PUBLIC_INCLUDE_DIRS ${INCLUDE_DIR_LIST}
+)
 
-IF ( INSTALL_MEMORY_MANAGER )
-    INCLUDE_DIRECTORIES( ${MEMORYMANAGER_DIR} ${MEMORYPTR_DIR} )
-    LIST( APPEND FOLDER_DIR ${MEMORYMANAGER_DIR} ${MEMORYPTR_DIR} )
-    LIST( APPEND SOURCE_DIR 
-        ${MEMORYPTR_DIR}/MemoryPtr.h
-        ${MEMORYMANAGER_DIR}/IMemoryPool.h 
-        ${MEMORYMANAGER_DIR}/MemoryPool.h
-        ${MEMORYMANAGER_DIR}/MemoryManager.h ${MEMORYMANAGER_DIR}/MemoryManager.cpp
-        )
-    MESSAGE( STATUS "Install Memory Manager" )
-ELSE()
-    INCLUDE_DIRECTORIES( ${MEMORYPOOL_DIR} ${MEMORYPTR_DIR} )
-    LIST( APPEND FOLDER_DIR ${MEMORYMANAGER_DIR} ${MEMORYPTR_DIR} )
-    LIST( APPEND SOURCE_DIR
-        ${MEMORYPTR_DIR}/MemoryPtr.h
-        ${MEMORYPOOL_DIR}/MemoryPtr.h
-        ${MEMORYPOOL_DIR}/MemoryPool.h ${MEMORYPOOL_DIR}/MemoryPool.cpp
-        )
-    MESSAGE( STATUS "Install only Memory Pool" )
-ENDIF()
+# ------ Set the project options ------ #
+include(${CMAKE_SOURCE_DIR}/external/CMake/Project.cmake)
 
-IF ( WIN32 )
-    MESSAGE( STATUS "Windows Platform for library")
-    SET( CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS 1 )
-ENDIF()
+project_options()
 
-MESSAGE( STATUS "Setting Done ")
-# ----------------------------------------------- #
+target_include_directories(${PROJECT_NAME} PRIVATE ${EXTERNAL_DIR})
+target_link_libraries(${PROJECT_NAME} PRIVATE ReflectionProject LogProject)
 
+# ------ Add the sub modules ------ #
+message(STATUS "- Add the Sub Project")
 
+set(REFLECTION_DEMO_FILE OFF)
+add_subdirectory(${CMAKE_SOURCE_DIR}/external/Reflection Reflection)
 
-# ------ Create library ---------------- #
-MESSAGE(STATUS "Create Library ")
+set(LOG_DEMO_FILE OFF)
+add_subdirectory(${CMAKE_SOURCE_DIR}/external/Log Log)
 
-IF ( BUILD_STATIC_LIBRARY )
-    ADD_LIBRARY( ${PROJECT_NAME} STATIC ${SOURCE_DIR} )
-    MESSAGE( STATUS "Build library as a static" )
-ELSE ()
-    ADD_LIBRARY( ${PROJECT_NAME} SHARED ${SOURCE_DIR} )
-    MESSAGE( STATUS "Build library as a dynamic" )
-ENDIF()
+# ------ Create the Demofile ------ #
+option(MEMORY_DEMO_FILE "Build the demo file" ON)
 
-FOREACH( FOLDER ${FOLDER_DIR} )
-    FILE( COPY ${FOLDER}/ DESTINATION ${INCLUDE_DIR}/${PROJECT_NAME}
-        FILES_MATCHING PATTERN "*.h" )
-ENDFOREACH()
+if (MEMORY_DEMO_FILE)
+    message(STATUS "# Create the demofile project")
 
-IF ( CMAKE_BUILD_TYPE MATCHES Debug )
-    SET_TARGET_PROPERTIES( ${PROJECT_NAME} PROPERTIES
-        ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${ARC_DIR}
-        LIBRARY_OUTPUT_DIRECTORY_DEBUG ${LIB_DIR}
-        RUNTIME_OUTPUT_DIRECTORY_DEBUG ${BIN_DIR}
-    )
-    MESSAGE( STATUS "Build library on Debug mode" )
-ELSEIF ( CMAKE_BUILD_TYPE MATCHES Release )
-    SET_TARGET_PROPERTIES( ${PROJECT_NAME} PROPERTIES
-        ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${ARC_DIR}
-        LIBRARY_OUTPUT_DIRECTORY_RELEASE ${LIB_DIR}
-        RUNTIME_OUTPUT_DIRECTORY_RELEASE ${BIN_DIR}
-    )
-    MESSAGE( STATUS "Build library on Release mode" )
-ELSE()
-    SET_TARGET_PROPERTIES( ${PROJECT_NAME} PROPERTIES
-        ARCHIVE_OUTPUT_DIRECTORY ${ARC_DIR}
-        LIBRARY_OUTPUT_DIRECTORY ${LIB_DIR}
-        RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR}
-    )
-    MESSAGE( STATUS "Build library on Other mode" )
-ENDIF()
-
-MESSAGE( STATUS "Creating Done ")
-# ----------------------------------------------- #
-
-
-
-# ------ Set Options for Target Files ----------- #
-MESSAGE(STATUS "Set Options for Target Files")
-
-TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC ${FOLDER_DIR} ${DEP_INCLUDE})
-TARGET_LINK_DIRECTORIES(${PROJECT_NAME} PUBLIC ${LIB_DIR})
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${DEP_LIBS})
-ADD_DEPENDENCIES(${PROJECT_NAME} ${DEP_LIST})
-
-MESSAGE(STATUS "Setting Done ")
-# ----------------------------------------------- #
-
-
-
-# ------ Create Demofile ------------------------ #
-MESSAGE( STATUS "Create Demofile")
-
-IF ( INSTALL_DEMO_FILE )
-    ADD_SUBDIRECTORY( ${DEMOFILE_DIR} )
-    MESSAGE( STATUS "Install Demofile that use Log" )
-ELSE()
-    MESSAGE( STATUS "Do not install MemoryProject's Demofile" )
-ENDIF()
-
-MESSAGE( STATUS "Create Done")
-# ----------------------------------------------- #
+    add_subdirectory(${MAIN_DIR}/demofile)
+endif()

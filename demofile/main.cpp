@@ -1,94 +1,85 @@
-#include "MemoryManager.h"
-#include <LogProject/Log.h>
+#include <Log/include/Log.h>
+#include <Log/include/LogPlatform.h>
+#include <Reflection/include/Reflection.h>
+#include <Memory.h>
 #include <iostream>
 
-struct IObject
+class Monster
 {
-    public :
-        IObject( int Value ) : m_Value( Value ) {};
-        virtual ~IObject() {};
-
-        virtual void Action() { Log::Info("IObject"); }
-
-    public :
-        int m_Value;
+    GENERATE(Monster);
 };
 
-struct Object : public IObject
+class Weapon
 {
-    public :
-        Object( int Value ) : IObject( Value ) {};
-        Object() : IObject( 0 ) {};
-        virtual ~Object() {};
-
-        virtual void Action() { Log::Info("Object"); }
+    GENERATE(Weapon);
 };
 
-MemoryPtr<Object> Change( MemoryPtr<IObject>& Value )
+class Potion
 {
-    return Value;
-}
+    GENERATE(Potion);
+};
+
+class IObject
+{
+    GENERATE(IObject);
+};
+
+class Object : public IObject
+{
+    GENERATE(Object);
+
+public :
+    PROPERTY(m_Weapon);
+    Memory::ObjectPtr<Weapon> m_Weapon;
+
+    PROPERTY(m_Hp);
+    float m_Hp;
+
+    PROPERTY(m_Potions);
+    Memory::ObjectPtr<Potion[]> m_Potions;
+};
+
+class World
+{
+    GENERATE(World);
+
+public :
+    PROPERTY(m_Object);
+    Memory::ObjectPtr<Object> m_Object;
+
+    PROPERTY(m_Monster);
+    Memory::ObjectPtr<Monster> m_Monster;
+};
 
 void Example()
 {
-    system("pause");
-    MemoryManager::GetHandle().Init();
-    MemoryManager::GetHandle().SetDefaultSize( 32 );
+    Memory::ObjectPtr<Object> ptr = Memory::MakePtr<Object>();
+    ptr->m_Potions = Memory::MakeArray<Potion>(20);
 
-    MemoryPtr<IObject> IIValue = MemoryManager::GetHandle().CreateOne<IObject>( 10 );
+    Memory::ObjectPtr<IObject> parent = ptr;
 
-    // Test for creating and deleting object
-    for ( int I = 0; I < 2; I++ )
-    {
-        MemoryManager::GetHandle().Create<Object>();
-    }
-    MemoryPtr<Object> Value1 = MemoryManager::GetHandle().Create<Object>();
-    MemoryPtr<Object> Value2 = MemoryManager::GetHandle().Create<Object>();
-    for ( int I = 0; I < 2; I++ )
-    {
-        MemoryManager::GetHandle().Create<Object>();
-    }
-    MemoryManager::GetHandle().Delete<Object>( Value1 );
-    MemoryManager::GetHandle().Delete<Object>( Value2 );
-    for ( int I = 0; I < 2; I++ )
-    {
-        MemoryManager::GetHandle().Create<Object>();
-    }
+    Memory::ObjectPtr<Object> child = Memory::Cast<Object>(parent);
 
-    // Value1.GetInstance();
-    // Test for casting in MemoryPtr
-    MemoryPtr<IObject> IValue = Value1 = MemoryManager::GetHandle().Create<Object>();
-    IValue->Action();
-    MemoryPtr<Object> NewValue = Change( IValue );
-    NewValue.GetInstance().Action();
-
-    MemoryManager::GetHandle().Destroy();
+    /** Compile Error - Dangerouse down casting
+        Memory::ObjectPtr<Object> child = parent;
+    */
 }
-#ifdef _WIN32
-#include <windows.h>
 
-    #pragma comment(linker, "/entry:WinMainCRTStartup")
-    #pragma comment(linker, "/subsystem:console")
-
-int CALLBACK WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd )
+int MAIN()
 {
-    Log::Info(" OS | Windows ");
-#elif __linux__
-int main()
-{
-    Log::Info(" OS | Linux ");
-#endif
+    Log::Init(1024, Log::Enum::eMode_Print, Log::Enum::eLevel_Type | Log::Enum::eLevel_Time);
+    Memory::Init(1024, 100);
 
-    try
-    {
-        Example();
-    }
-    catch( const Except& e )
-    {
-        Log::Error( e.what() );
-    }
+    Memory::RootPtr<World> world = Memory::MakePtr<World>();
+    world->m_Monster = Memory::MakePtr<Monster>();
+    world->m_Object = Memory::MakePtr<Object>();
 
-    Log::Print();
-    
+    Example();
+
+    Memory::Collect();
+    Memory::Release();
+
+    system("pause");
+
     return 0;
-};
+}

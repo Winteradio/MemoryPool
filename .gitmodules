@@ -1,0 +1,9 @@
+[submodule "external/CMake"]
+	path = external/CMake
+	url = https://github.com/Winteradio/CMake.git
+[submodule "external/Log"]
+	path = external/Log
+	url = https://github.com/Winteradio/Log.git
+[submodule "external/Reflection"]
+	path = external/Reflection
+	url = https://github.com/Winteradio/Reflection.git

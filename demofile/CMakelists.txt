@@ -1,148 +1,35 @@
-# ------ Set Options for Projects --------------- #
-MESSAGE(STATUS "Set Options for Project")
+# ------ Set the basic options for the demo project ------- #
+message(STATUS "# Set the basic options for the demo project")
 
-## CMake minimum version required
-CMAKE_MINIMUM_REQUIRED(VERSION 3.20)
+cmake_minimum_required(VERSION 3.20)
+project(Demo LANGUAGES CXX)
 
-## Set CXX Compiler Version
-SET(CMAKE_CXX_STANDARD 17)
+# ------ Create the executable program ------ #
+if (WIN32)
+    message(STATUS "- Demo Platform : Windows")
+    add_executable(${PROJECT_NAME} WIN32)
+else ()
+    message(STATUS "- Demo Platform : Others")
+    add_executable(${PROJECT_NAME})
+endif()
 
-SET( PROJECT_NAME "Demofile")
-PROJECT( ${PROJECT_NAME} )
+# ------ Set the project options ------ #
+include(${CMAKE_SOURCE_DIR}/external/CMake/Project.cmake)
+project_options()
 
-MESSAGE(STATUS "Setting Done")
-# ----------------------------------------------- #
+# ------ Set the properties the executable program ------ #
+set(MAIN_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
+set(HEADER_LIST 
+    ${MAIN_DIR}/../include
+    ${MAIN_DIR}/../external
+)
 
-# ------ Set Files ------------------------------ #
-MESSAGE(STATUS "Set Source File")
-
-SET( MAIN_DIR ${CMAKE_SOURCE_DIR} )
-SET( MEMORYPTR_DIR ${MAIN_DIR}/../MemoryPtr )
-SET( MEMORYMANAGER_DIR ${MAIN_DIR}/../MemoryManager )
-
-## Source Files
-LIST(APPEND SRCS
-    ## Demo file
+target_sources(${PROJECT_NAME} PRIVATE
     ${MAIN_DIR}/main.cpp
-
-    ${MEMORYPTR_DIR}/MemoryPtr.h
-    ${MEMORYMANAGER_DIR}/IMemoryPool.h
-    ${MEMORYMANAGER_DIR}/MemoryPool.h
-    ${MEMORYMANAGER_DIR}/MemoryManager.h ${MEMORYMANAGER_DIR}/MemoryManager.cpp
 )
 
-LIST(APPEND INCS 
-    ${MEMORYPTR_DIR} ${MEMORYMANAGER_DIR} ${MEMORYEXCEPT_DIR} )
+target_include_directories(${PROJECT_NAME} PUBLIC ${HEADER_LIST})
+target_link_libraries(${PROJECT_NAME} PUBLIC MemoryProject ReflectionProject LogProject)
 
-MESSAGE(STATUS "Setting Done ")
-# ----------------------------------------------- #
-
-
-
-# ------ Set Options for Target Files ----------- #
-MESSAGE( STATUS "Add Executable by platform")
-
-## Include Header Directories for Target Files
-IF ( WIN32 )
-    MESSAGE( STATUS "Windows Platform for demofile")
-    ADD_EXECUTABLE( ${PROJECT_NAME} WIN32 ${SRCS} )
-
-    SET( STATIC_LIB lib )
-    SET( DYNAMIC_LIB dll)
-
-ELSE ()
-    MESSAGE( STATUS "Other Platform for demofile")
-    ADD_EXECUTABLE( ${PROJECT_NAME} ${SRCS} )
-
-    SET( STATIC_LIB a )
-    SET( DYNAMIC_LIB so )
-
-ENDIF()
-
-MESSAGE( STATUS "Setting Done" )
-# ----------------------------------------------- #
-
-
-
-# ------ Set Executable file -------------------- #
-MESSAGE(STATUS "Set Options for Target Files")
-
-SET( CMAKE_BUILD_TYPE Debug CACHE STRING "Build Type" )
-
-IF ( CMAKE_BUILD_TYPE MATCHES Debug )
-    SET( EXE_DIR ${MAIN_DIR}/build/Debug )
-    SET_TARGET_PROPERTIES( ${PROJECT_NAME} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY_DEBUG ${EXE_DIR}
-    )
-    MESSAGE( STATUS "Build exe file on Debug mode" )
-ELSEIF ( CMAKE_BUILD_TYPE MATCHES Release )
-    SET( EXE_DIR ${MAIN_DIR}/build/Release )
-    SET_TARGET_PROPERTIES( ${PROJECT_NAME} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY_RELEASE ${EXE_DIR}
-    )
-    MESSAGE( STATUS "Build exe file on Release mode" )
-ELSE()
-    SET( EXE_DIR ${MAIN_DIR}/build )
-    SET_TARGET_PROPERTIES( ${PROJECT_NAME} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY ${EXE_DIR}
-    )
-    MESSAGE( STATUS "Build exe file on Other mode" )
-ENDIF()
-
-MESSAGE( STATUS "Setting Done ")
-# ----------------------------------------------- #
-
-
-
-# ------ Download LogProject in Github ---------- #
-MESSAGE( STATUS "Download LogProject" )
-
-INCLUDE( ExternalProject )
-
-SET( DEP_INCLUDE )
-SET( DEP_LIBS )
-SET( DEP_LIST )
-
-SET( PREFIX_DIR ${MAIN_DIR}/build/Prefix )
-SET( INCLUDE_DIR ${MAIN_DIR}/build/include )
-SET( LIB_DIR ${MAIN_DIR}/build/lib )
-SET( BIN_DIR ${EXE_DIR} )
-SET( ARC_DIR ${MAIN_DIR}/build/arc )
-
-EXTERNALPROJECT_ADD(
-	LogProject
-	GIT_REPOSITORY GIT_REPOSITORY https://github.com/Winteradio/Log.git
-	GIT_TAG "v2.4.0"
-
-	PREFIX ${PREFIX_DIR}/LogProject
-
-	UPDATE_COMMAND "" PATCH_COMMAND "" TEST_COMMAND "" INSTALL_COMMAND ""
-	CMAKE_ARGS 
-		-DINCLUDE_DIR=${INCLUDE_DIR}
-		-DLIB_DIR=${LIB_DIR}
-		-DBIN_DIR=${BIN_DIR}
-		-DARC_DIR=${ARC_DIR}
-		-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-		-DBUILD_STATIC_LIBRARY=${BUILD_STATIC_LIBRARY}
- 		-DINSTALL_DEMO_FILE=OFF 
-)
-LIST( APPEND DEP_INCLUDE ${INCLUDE_DIR} )
-LIST( APPEND DEP_LIST LogProject )
-LIST( APPEND DEP_LIBS ${ARC_DIR}/LogProject.${STATIC_LIB} )
-
-MESSAGE( STATUS "Downloading Done" )
-# ----------------------------------------------- #
-
-
-
-# ------ Link LogProject on Target  ------------- #
-MESSAGE(STATUS "Set Options for Target Files")
-
-TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC ${DEP_INCLUDE} ${INCS})
-TARGET_LINK_DIRECTORIES(${PROJECT_NAME} PUBLIC ${DEMO_LIB_DIR})
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${DEP_LIBS})
-ADD_DEPENDENCIES(${PROJECT_NAME} ${DEP_LIST})
-
-MESSAGE(STATUS "Setting Done ")
-# ----------------------------------------------- #
+set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
