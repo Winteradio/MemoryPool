@@ -2,7 +2,9 @@
 #include <Log/include/LogPlatform.h>
 #include <Reflection/include/Reflection.h>
 #include <Memory.h>
+
 #include <iostream>
+#include <memory>
 
 class Monster
 {
@@ -56,9 +58,47 @@ void Example()
     Memory::ObjectPtr<Object> ptr = Memory::MakePtr<Object>();
     ptr->m_Potions = Memory::MakeArray<Potion>(20);
 
-    Memory::ObjectPtr<IObject> parent = ptr;
+    {
+        // Sate Implicit casting the parent to the child tye.
+        Memory::ObjectPtr<IObject> object = ptr;
+        Memory::ObjectPtr<const IObject> objectConst = ptr;
+        const Memory::ObjectPtr<IObject> constObject = ptr;
+        const Memory::ObjectPtr<const IObject> constObjectconst = ptr;
 
-    Memory::ObjectPtr<Object> child = Memory::Cast<Object>(parent);
+        auto& ref = *constObject;
+    }
+
+    {
+        // Compile Error - Implicit cast the parent to the child type.
+        /*
+        Memory::ObjectPtr<IObject> parent = ptr;
+        Memory::ObjectPtr<Object> child = parent;
+        */
+    }
+
+    std::shared_ptr<int> value;
+
+    {
+        const Memory::ObjectPtr<IObject> parent = ptr;
+        const Memory::ObjectPtr<Object> child = Memory::Cast<Object>(parent);
+    }
+
+    {
+        Memory::ObjectPtr<const IObject> parent = ptr;
+        Memory::ObjectPtr<const Object> child = Memory::Cast<const Object>(parent);
+    }
+
+    {
+        Memory::ObjectPtr<const IObject> parent = ptr;
+        Memory::ObjectPtr<Object> child = Memory::ConstCast<Object>(parent);
+    }
+
+    {
+        /*
+        Memory::ObjectPtr<const IObject> parent = ptr;
+        Memory::ObjectPtr<Object> child = Memory::Cast<Object>(parent);
+        */
+    }
 
     /** Compile Error - Dangerouse down casting
         Memory::ObjectPtr<Object> child = parent;

@@ -66,6 +66,6 @@ namespace Memory
 
 		Update();
 
-		return m_current > zero ? true : false;
+		return m_current > zero;
 	}
 }

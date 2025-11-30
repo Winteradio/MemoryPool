@@ -1,5 +1,13 @@
+set(PROJECT_NAME MemoryProject)
+
+if (TARGET ${PROJECT_NAME})
+    message(STATUS "# ${PROJECT_NAME} target is already defined. Skipping build configuration.")
+    
+    return()
+endif()
+
 cmake_minimum_required(VERSION 3.20)
-project(MemoryProject LANGUAGES CXX)
+project(${PROJECT_NAME} LANGUAGES CXX)
 
 # ------ Create the library ------ #
 include(${CMAKE_SOURCE_DIR}/external/CMake/Library.cmake)
@@ -71,8 +79,8 @@ include(${CMAKE_SOURCE_DIR}/external/CMake/Project.cmake)
 
 project_options()
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${EXTERNAL_DIR})
-target_link_libraries(${PROJECT_NAME} PRIVATE ReflectionProject LogProject)
+target_include_directories(${PROJECT_NAME} PUBLIC ${EXTERNAL_DIR})
+target_link_libraries(${PROJECT_NAME} PUBLIC ReflectionProject LogProject)
 
 # ------ Add the sub modules ------ #
 message(STATUS "- Add the Sub Project")

@@ -26,13 +26,13 @@ namespace Memory
 			}
 
 			RootPtr(const RootPtr<T>& other)
-				: ObjectPtr<T>(*other)
+				: ObjectPtr<T>(other)
 			{
 				GetCollector().AddRoot(this);
 			}
 
 			RootPtr(RootPtr<T>&& other)
-				: ObjectPtr<T>(*other)
+				: ObjectPtr<T>(std::move(other))
 			{
 				GetCollector().AddRoot(this);
 			}
@@ -63,13 +63,13 @@ namespace Memory
 			}
 
 			RootPtr(const RootPtr<T[]>& other)
-				: ObjectPtr<T[]>(*other)
+				: ObjectPtr<T[]>(other)
 			{
 				GetCollector().AddRoot(this);
 			}
 
 			RootPtr(RootPtr<T[]>&& other)
-				: ObjectPtr<T[]>(*other)
+				: ObjectPtr<T[]>(std::move(other))
 			{
 				GetCollector().AddRoot(this);
 			}

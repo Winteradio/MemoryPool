@@ -96,6 +96,9 @@ namespace Memory
 
 			for (auto [name, property] : properties)
 			{
+				// TODO -> How to make the property info for the general standard structure like std::vector, std::set, std::map...
+				// In the future, used the ecs project, the other manager maybe use the reflection system with garbage collector.
+				// But, if the manager's container is the std::vector, the contents will disappear after that the GC collecting.
 				const Reflection::TypeInfo* propertyType = property->GetPropertyType();
 				if (!Reflection::IsChild(baseType, propertyType))
 				{

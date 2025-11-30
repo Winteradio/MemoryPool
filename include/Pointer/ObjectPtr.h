@@ -18,18 +18,24 @@ namespace Memory
 				: m_accessor(nullptr)
 			{}
 
-			ObjectPtr(IAccessor* accessor)
+			ObjectPtr(const IAccessor* accessor)
 				: m_accessor(accessor)
 				, m_instance(static_cast<T*>(accessor->GetPointer()))
 			{}
 
-			template<typename U, typename = Reflection::Utils::IsEnabled_t<Reflection::Utils::IsChild<T, U>::value>>
+			template<typename U, 
+				typename = Reflection::Utils::IsEnabled_t<
+					Reflection::Utils::IsSame<T, U>::value || Reflection::Utils::IsBase<T, U>::value>
+			>
 			ObjectPtr(const ObjectPtr<U>& other)
 				: m_accessor(other.m_accessor)
 				, m_instance(static_cast<T*>(other.m_instance))
 			{}
 
-			template<typename U, typename = Reflection::Utils::IsEnabled_t<Reflection::Utils::IsChild<T, U>::value>>
+			template<typename U, 
+				typename = Reflection::Utils::IsEnabled_t<
+					Reflection::Utils::IsSame<T, U>::value || Reflection::Utils::IsBase<T, U>::value>
+			>
 			ObjectPtr(ObjectPtr<U>&& other) noexcept
 				: m_accessor(std::move(other.m_accessor))
 				, m_instance(static_cast<T*>(other.m_instance))
@@ -37,7 +43,10 @@ namespace Memory
 
 			virtual ~ObjectPtr() = default;
 
-			template<typename U, typename = Reflection::Utils::IsEnabled_t<Reflection::Utils::IsChild<T, U>::value>>
+			template<typename U, 
+				typename = Reflection::Utils::IsEnabled_t<
+					Reflection::Utils::IsSame<T, U>::value || Reflection::Utils::IsBase<T, U>::value>
+			>
 			ObjectPtr& operator=(const ObjectPtr<U>& other)
 			{
 				if (this != &other)
@@ -49,7 +58,10 @@ namespace Memory
 				return *this;
 			}
 
-			template<typename U, typename = Reflection::Utils::IsEnabled_t<Reflection::Utils::IsChild<T, U>::value>>
+			template<typename U, 
+				typename = Reflection::Utils::IsEnabled_t<
+					Reflection::Utils::IsSame<T, U>::value || Reflection::Utils::IsBase<T, U>::value>
+			>
 			ObjectPtr& operator=(ObjectPtr<U>&& other)
 			{
 				m_accessor = std::move(other.m_accessor);
@@ -61,7 +73,7 @@ namespace Memory
 		public :
 			T& operator*()
 			{
-				assert(nullptr != m_instance && "The instance is invalid.");
+				assert(nullptr != m_accessor && "The accessor is invalid.");
 
 				return *m_instance;
 			}
@@ -71,14 +83,14 @@ namespace Memory
 				return m_instance;
 			}
 
-			const T& operator*() const
+			T& operator*() const
 			{
-				assert(nullptr != m_instance && "The instance is invalid.");
+				assert(nullptr != m_accessor && "The accessor is invalid.");
 
 				return *m_instance;
 			}
 
-			const T* operator->() const
+			T* operator->() const
 			{
 				return m_instance;
 			}
@@ -91,10 +103,10 @@ namespace Memory
 
 			const void* GetPointer() const
 			{
-				return static_cast<void*>(m_instance);
+				return static_cast<const void*>(m_instance);
 			}
 
-			IAccessor* GetAccessor() const
+			const IAccessor* GetAccessor() const
 			{
 				return m_accessor;
 			}
@@ -119,7 +131,7 @@ namespace Memory
 			template<typename U>
 			friend class ObjectPtr;
 
-			IAccessor* m_accessor;
+			const IAccessor* m_accessor;
 			T* m_instance;
 	};
 
@@ -138,11 +150,11 @@ namespace Memory
 			{}
 
 			ObjectPtr(const ObjectPtr<T[]>& other)
-				: ObjectPtr<U>(other)
+				: ObjectPtr<T>(other)
 			{}
 
 			ObjectPtr(ObjectPtr<T[]>&& other) noexcept
-				: ObjectPtr<U>(std::move(other))
+				: ObjectPtr<T>(std::move(other))
 			{}
 
 			virtual ~ObjectPtr() = default;
@@ -164,12 +176,16 @@ namespace Memory
 		public :
 			T& operator[](const size_t index)
 			{
-				return ObjectPtr<T>::operator->[index];
+				assert(index < GetSize() && "The array index out of bounds.");
+
+				return this->m_instance[index];
 			}
 
-			const T& operator[](const size_t index) const
+			T& operator[](const size_t index) const
 			{
-				return ObjectPtr<T>::operator->[index];
+				assert(index < GetSize() && "The array index out of bounds.");
+
+				return this->m_instance[index];
 			}
 
 			size_t GetSize() const

@@ -149,8 +149,11 @@ namespace Memory
 
 		List& operator=(List<T>&& other) noexcept
 		{
-			m_end = std::move(other.m_end);
-			m_count = std::move(other.m_count);
+			if (this != &other)
+			{
+				Clear();
+				this->Splice(End(), other);
+			}
 
 			return *this;
 		}

@@ -31,10 +31,47 @@ namespace Memory
 	}
 
 	template<typename T, typename U>
-	ObjectPtr<T> Cast(const ObjectPtr<U>& other)
+	const ObjectPtr<T> Cast(const ObjectPtr<U>& other)
 	{
-		U* otherInstance = const_cast<U*>(&*other);
+		static_assert(!Reflection::Utils::IsConst<U>::value || Reflection::Utils::IsConst<T>::value,
+			"Memory::Cast<T, U> : If the U is the const qualifier, the T must be the const qualifier.");
+
+		U* otherInstance = (&*other);
 		T* instance = Reflection::Cast<T*, U*>(otherInstance);
+		if (nullptr != instance)
+		{
+			return ObjectPtr<T>(other.GetAccessor());
+		}
+		else
+		{
+			return ObjectPtr<T>();
+		}
+	}
+
+	template<typename T, typename U>
+	ObjectPtr<T> Cast(ObjectPtr<U>& other)
+	{
+		static_assert(!Reflection::Utils::IsConst<U>::value || Reflection::Utils::IsConst<T>::value,
+			"Memory::Cast<T, U> : If the U is the const qualifier, the T must be the const qualifier.");
+
+		U* otherInstance = (&*other);
+		T* instance = Reflection::Cast<T*, U*>(otherInstance);
+		if (nullptr != instance)
+		{
+			return ObjectPtr<T>(other.GetAccessor());
+		}
+		else
+		{
+			return ObjectPtr<T>();
+		}
+	}
+
+	template<typename T, typename U, 
+		typename Return = typename Reflection::Utils::Conditional<Reflection::Utils::IsConst<U>::value && !Reflection::Utils::IsConst<T>::value, const T, T>::Type>
+	ObjectPtr<T> ConstCast(const ObjectPtr<U>& other)
+	{
+		U* otherInstance = (&*other);
+		Return* instance = Reflection::Cast<Return*, U*>(otherInstance);
 		if (nullptr != instance)
 		{
 			return ObjectPtr<T>(other.GetAccessor());

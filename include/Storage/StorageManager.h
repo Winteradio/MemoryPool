@@ -86,13 +86,13 @@ namespace Memory
 				const size_t typeHash = typeInfo->GetTypeHash();
 
 				auto [itr, inserted] = m_poolMap.try_emplace(typeHash);
-				auto& PoolBudget = itr->second;
+				auto& poolBudget = itr->second;
 				if (inserted)
 				{
-					PoolBudget.Init<T>(m_poolSize);
+					poolBudget.Init<T>(m_poolSize);
 				}
 
-				return PoolBudget;
+				return poolBudget;
 			}
 
 			template<typename T>
@@ -102,13 +102,13 @@ namespace Memory
 				const size_t typeHash = typeInfo->GetTypeHash();
 
 				auto [itr, inserted] = m_arrayMap.try_emplace(typeHash);
-				auto& ArrayBudget = itr->second;
+				auto& arrayBudget = itr->second;
 				if (inserted)
 				{
-					ArrayBudget.Init<T>();
+					arrayBudget.Init<T>();
 				}
 
-				return ArrayBudget;
+				return arrayBudget;
 			}
 
 		private :
