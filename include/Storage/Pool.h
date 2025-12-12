@@ -1,8 +1,10 @@
 #ifndef __MEMORY_POOL_H__
 #define __MEMORY_POOL_H__
 
+#include <Container/include/Arena.h>
+#include <Container/include/DynamicArray.h>
+
 #include "Storage/IStorage.h"
-#include "Container/Arena.h"
 #include "Accessor/Accessor.h"
 #include "TimeLimit.h"
 
@@ -18,7 +20,7 @@ namespace Memory
 		virtual ~IPool() = default;
 
 	public :
-		virtual void Scan() = 0;
+		virtual bool Purge(TimeLimit& timeLimit) = 0;
 	};
 
 	template<typename T>
@@ -28,6 +30,7 @@ namespace Memory
 			Pool()
 				: m_freeList()
 				, m_usedList()
+				, m_deadList()
 				, m_chunkSize()
 				, m_totalCount()
 				, m_memory(nullptr)
@@ -56,30 +59,30 @@ namespace Memory
 				m_totalCount = memorySize / m_chunkSize;
 				m_memory = m_arena.Allocate(m_totalCount * m_chunkSize);
 
-				m_freeList.reserve(m_totalCount);
-				m_usedList.reserve(m_totalCount);
-				m_scanList.reserve(m_totalCount);
+				m_freeList.Reserve(m_totalCount);
+				m_usedList.Reserve(m_totalCount);
+				m_deadList.Reserve(m_totalCount);
 
 				for (size_t index = 0; index < m_totalCount; index++)
 				{
 					uint8_t* freeChunk = static_cast<uint8_t*>(m_memory) + (index * m_chunkSize);
-					m_freeList.push_back(freeChunk);
+					m_freeList.PushBack(freeChunk);
 				}
 			}
 
-			void Clear()
+			void Clear() override
 			{
 				if (nullptr == m_memory)
 				{
 					return;
 				}
 
-				m_usedList.insert(m_usedList.end(), m_scanList.begin(), m_scanList.end());
+				m_deadList.Insert(m_deadList.end(), m_usedList.begin(), m_usedList.end());
 
-				while (!m_usedList.empty())
+				while (!m_deadList.Empty())
 				{
-					uint8_t* address = m_usedList.back();
-					m_usedList.pop_back();
+					uint8_t* address = m_deadList.Back();
+					m_deadList.PopBack();
 
 					IAccessor* accessor = reinterpret_cast<IAccessor*>(address);
 					if (nullptr != accessor)
@@ -89,56 +92,48 @@ namespace Memory
 					}
 				}
 
-				m_freeList.clear();
-				m_usedList.clear();
-				m_scanList.clear();
+				m_freeList.Clear();
+				m_usedList.Clear();
+				m_deadList.Clear();
 
 				m_arena.Deallocate(m_memory);
 			}
 
 			IAccessor* Acquire() override
 			{
-				if (m_freeList.empty())
+				if (m_freeList.Empty())
 				{
 					return nullptr;
 				}
 
-				uint8_t* address = m_freeList.back();
-				m_usedList.push_back(address);
-				m_freeList.pop_back();
+				uint8_t* address = m_freeList.Back();
+				m_usedList.PushBack(address);
+				m_freeList.PopBack();
 
 				IAccessor* accessor = new (address) Accessor<T>(1);
 				return accessor;
 			}
 
-			void Scan()
+			bool Purge(TimeLimit& timeLimit) override
 			{
-				std::swap(m_usedList, m_scanList);
-			}
-
-			bool Sweep(TimeLimit& timeLimit)
-			{
-				timeLimit.SetInterval(10);
-
-				while (!m_scanList.empty())
+				if (m_deadList.Empty())
 				{
-					uint8_t* address = m_scanList.back();
-					m_scanList.pop_back();
+					return true;
+				}
+
+				while (!m_deadList.Empty())
+				{
+					uint8_t* address = m_deadList.Back();
+					m_deadList.PopBack();
 
 					IAccessor* accessor = reinterpret_cast<IAccessor*>(address);
-
-					const IAccessor::eStatus status = accessor->GetStatus();
-					if (IAccessor::eStatus::eMarked == status)
+					if (nullptr != accessor)
 					{
-						m_usedList.push_back(address);
-					}
-					else
-					{
-						m_freeList.push_back(address);
-
 						accessor->Destruct();
 						accessor->~IAccessor();
 					}
+
+					m_freeList.PushBack(address);
 
 					if (!timeLimit.HasTime())
 					{
@@ -147,6 +142,32 @@ namespace Memory
 				}
 
 				return true;
+			}
+
+			void Sweep() override
+			{
+				if (m_usedList.Empty())
+				{
+					return;
+				}
+
+				auto itr = m_usedList.Begin();
+				while (itr != m_usedList.End())
+				{
+					uint8_t* address = *itr;
+					IAccessor* accessor = reinterpret_cast<IAccessor*>(address);
+
+					const IAccessor::eStatus status = accessor->GetStatus();
+					if (status == IAccessor::eStatus::eUnreachable)
+					{
+						m_deadList.PushBack(address);
+						itr = m_usedList.Erase(itr);
+					}
+					else
+					{
+						itr++;
+					}
+				}
 			}
 			
 			size_t GetChunkSize() const override
@@ -166,17 +187,22 @@ namespace Memory
 
 			float GetUsedRatio() const override
 			{
-				const size_t usedCount = m_usedList.size();
+				const size_t usedCount = m_usedList.Size();
 				const float ratio = static_cast<float>(usedCount) / static_cast<float>(m_totalCount);
 				return ratio;
 			}
 
-		private :
-			std::vector<uint8_t*> m_freeList;
-			std::vector<uint8_t*> m_usedList;
-			std::vector<uint8_t*> m_scanList;
+			bool Empty() const override
+			{
+				return m_usedList.Size() == 0;
+			}
 
-			Arena m_arena;
+		private :
+			wtr::DynamicArray<uint8_t*> m_freeList;
+			wtr::DynamicArray<uint8_t*> m_usedList;
+			wtr::DynamicArray<uint8_t*> m_deadList;
+
+			wtr::Arena m_arena;
 
 			size_t m_chunkSize = 0;
 			size_t m_totalCount = 0;

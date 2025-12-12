@@ -47,10 +47,10 @@ class World
 
 public :
     PROPERTY(m_Object);
-    Memory::ObjectPtr<Object> m_Object;
+    wtr::DynamicArray<Memory::ObjectPtr<Object>> m_Object;
 
     PROPERTY(m_Monster);
-    Memory::ObjectPtr<Monster> m_Monster;
+    wtr::HashMap<int, Memory::ObjectPtr<Monster>> m_Monster;
 };
 
 void Example()
@@ -105,19 +105,49 @@ void Example()
     */
 }
 
+void GCExample()
+{
+    Memory::RootPtr<World> world = Memory::MakePtr<World>();
+    world->m_Object.Resize(10);
+    for (size_t index = 0; index < 10; index++)
+    {
+        world->m_Object[index] = Memory::MakePtr<Object>();
+    }
+
+    world->m_Monster.Reserve(100);
+    for (size_t index = 0; index < 100; index++)
+    {
+        world->m_Monster[index] = Memory::MakePtr<Monster>();
+    }
+
+    Memory::ObjectPtr<World> gcworld = Memory::MakePtr<World>();
+    gcworld->m_Object.Resize(10);
+    for (size_t index = 0; index < 10; index++)
+    {
+        gcworld->m_Object[index] = Memory::MakePtr<Object>();
+    }
+
+    gcworld->m_Monster.Reserve(100);
+    for (size_t index = 0; index < 100; index++)
+    {
+        gcworld->m_Monster[index] = Memory::MakePtr<Monster>();
+    }
+
+    for (size_t index = 0; index < 10; index++)
+    {
+        Memory::Collect();
+    }
+
+    Memory::Release();
+}
+
 int MAIN()
 {
     Log::Init(1024, Log::Enum::eMode_Print, Log::Enum::eLevel_Type | Log::Enum::eLevel_Time);
     Memory::Init(1024, 100);
 
-    Memory::RootPtr<World> world = Memory::MakePtr<World>();
-    world->m_Monster = Memory::MakePtr<Monster>();
-    world->m_Object = Memory::MakePtr<Object>();
-
     Example();
-
-    Memory::Collect();
-    Memory::Release();
+    GCExample();
 
     system("pause");
 

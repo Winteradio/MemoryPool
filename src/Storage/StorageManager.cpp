@@ -13,7 +13,7 @@ namespace Memory
 
 	StorageManager::~StorageManager()
 	{
-		if (!m_poolMap.empty() || !m_arrayMap.empty())
+		if (!m_poolMap.Empty() || !m_arrayMap.Empty())
 		{
 			Release();
 		}
@@ -35,55 +35,96 @@ namespace Memory
 			auto& bucket = bucketPair.second;
 			bucket.Release();
 		}
-		m_poolMap.clear();
+		m_poolMap.Clear();
 
 		for (auto& bucketPair : m_arrayMap)
 		{
 			auto& bucket = bucketPair.second;
 			bucket.Release();
 		}
-		m_arrayMap.clear();
+		m_arrayMap.Clear();
 	}
 
-	void StorageManager::Scan()
+	void StorageManager::Sweep()
 	{
-		LOGINFO() << "[MEMORY] Start the Scan";
+		LOGINFO() << "[MEMORY] Start the Sweep";
 
 		for (auto& bucketPair : m_poolMap)
 		{
 			auto& bucket = bucketPair.second;
-			bucket.Scan();
+			bucket.Sweep();
 		}
 
-		LOGINFO() << "[MEMORY] Complete the Scan";
+		for (auto& bucketPair : m_arrayMap)
+		{
+			auto& bucket = bucketPair.second;
+			bucket.Sweep();
+		}
 	}
 
-	bool StorageManager::Sweep(TimeLimit& timeLimit)
+	bool StorageManager::Purge(TimeLimit& timeLimit)
 	{
-		LOGINFO() << "[MEMORY] Start the Sweep";
+		LOGINFO() << "[MEMORY] Start the Purge";
 
 		timeLimit.Update();
 
 		for (auto& bucketPair : m_poolMap)
 		{
 			auto& bucket = bucketPair.second;
-			if (!bucket.Sweep(timeLimit))
+			if (!bucket.Purge(timeLimit))
 			{
 				return false;
+			}
+			else
+			{
+				bucket.Update();
+				bucket.Remove();
 			}
 		}
 
 		for (auto& bucketPair : m_arrayMap)
 		{
 			auto& bucket = bucketPair.second;
-			if (!bucket.Sweep(timeLimit))
+			bucket.Remove();
+		}
+
+		Clear();
+
+		LOGINFO() << "[MEMORY] Done the Purge";
+
+		return true;
+	}
+
+	void StorageManager::Clear()
+	{
+		LOGINFO() << "[MEMORY] Start to clear the budgets";
+
+		auto poolItr = m_poolMap.Begin();
+		while (poolItr != m_poolMap.End())
+		{
+			auto& bucket = poolItr->second;
+			if (bucket.Empty())
 			{
-				return false;
+				poolItr = m_poolMap.Erase(poolItr);
+			}
+			else
+			{
+				poolItr++;
 			}
 		}
 
-		LOGINFO() << "[MEMORY] Complete the Sweep";
-
-		return true;
+		auto arrayItr = m_arrayMap.Begin();
+		while (arrayItr != m_arrayMap.End())
+		{
+			auto& bucket = arrayItr->second;
+			if (bucket.Empty())
+			{
+				arrayItr = m_arrayMap.Erase(arrayItr);
+			}
+			else
+			{
+				arrayItr++;
+			}
+		}
 	}
 }

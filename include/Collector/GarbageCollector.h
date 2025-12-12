@@ -1,11 +1,13 @@
 #ifndef __MEMORY_GARBAGECOLLECTOR_H__
 #define __MEMORY_GARBAGECOLLECTOR_H__
 
-#include <unordered_set>
-#include <mutex>
-#include <vector>
 
 #include "TimeLimit.h"
+
+#include <Container/include/HashSet.h>
+#include <Container/include/DynamicArray.h>
+
+#include <mutex>
 
 namespace Memory
 {
@@ -18,7 +20,8 @@ namespace Memory
 			{
 				eIdle = 0,
 				eMarking = 1,
-				eSweeping = 2
+				eSweeping = 2,
+				ePurging = 3,
 			};
 
 		public :
@@ -36,12 +39,12 @@ namespace Memory
 		private :
 			void Prepare();
 			void Mark();
-			void Scan();
 			void Sweep();
+			void Purge();
 
 		private :
-			std::unordered_set<const BasePtr*> m_rootSet;
-			std::vector<const BasePtr*> m_graphStack;
+			wtr::HashSet<const BasePtr*> m_rootSet;
+			wtr::DynamicArray<const BasePtr*> m_graphStack;
 			TimeLimit m_timeLimit;
 			std::mutex m_mutex;
 			eStatus m_status;

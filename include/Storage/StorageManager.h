@@ -6,9 +6,10 @@
 #include "Accessor/Accessor.h"
 
 #include "Reflection/include/Reflection.h"
+#include "Container/include/HashMap.h"
 
-#include <unordered_map>
 #include <mutex>
+#include <unordered_map>
 
 namespace Memory
 {
@@ -17,8 +18,8 @@ namespace Memory
 	class StorageManager
 	{
 		public :
-			using PoolBudgetMap = std::unordered_map<size_t, PoolBudget>;
-			using ArrayBudgetMap = std::unordered_map<size_t, ArrayBudget>;
+			using PoolBudgetMap = wtr::HashMap<size_t, PoolBudget>;
+			using ArrayBudgetMap = wtr::HashMap<size_t, ArrayBudget>;
 
 		public :
 			StorageManager();
@@ -27,9 +28,10 @@ namespace Memory
 		public :
 			void Init(const size_t poolSize);
 			void Release();
+			void Clear();
 
-			void Scan();
-			bool Sweep(TimeLimit& timeLimit);
+			void Sweep();
+			bool Purge(TimeLimit& timeLimit);
 
 		public :
 			template<typename T, typename... Args>
@@ -51,7 +53,12 @@ namespace Memory
 				}
 
 				accessor->Construct(std::forward<Args>(args)...);
-				poolBudget.UpdatePool(poolEntry);
+
+				if (poolBudget.CheckDensity(poolEntry))
+				{
+					poolBudget.UpdatePool(poolEntry);
+				}
+
 				return accessor;
 			}
 
@@ -85,11 +92,13 @@ namespace Memory
 				const Reflection::TypeInfo* typeInfo = Reflection::TypeInfo::Get<T>();
 				const size_t typeHash = typeInfo->GetTypeHash();
 
-				auto [itr, inserted] = m_poolMap.try_emplace(typeHash);
+				std::unordered_map<int, int> map;
+
+				auto [itr, inserted] = m_poolMap.TryEmplace(typeHash);
 				auto& poolBudget = itr->second;
 				if (inserted)
 				{
-					poolBudget.Init<T>(m_poolSize);
+					poolBudget.Init<T>(m_poolSize, typeInfo->GetTypeName());
 				}
 
 				return poolBudget;
@@ -101,11 +110,11 @@ namespace Memory
 				const Reflection::TypeInfo* typeInfo = Reflection::TypeInfo::Get<T>();
 				const size_t typeHash = typeInfo->GetTypeHash();
 
-				auto [itr, inserted] = m_arrayMap.try_emplace(typeHash);
+				auto [itr, inserted] = m_arrayMap.TryEmplace(typeHash);
 				auto& arrayBudget = itr->second;
 				if (inserted)
 				{
-					arrayBudget.Init<T>();
+					arrayBudget.Init<T>(typeInfo->GetTypeName());
 				}
 
 				return arrayBudget;
