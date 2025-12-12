@@ -1,8 +1,9 @@
 #ifndef __MEMORY_ARRAY_H__
 #define __MEMORY_ARRAY_H__
 
+#include <Container/include/Arena.h>
+
 #include "Storage/IStorage.h"
-#include "Container/Arena.h"
 #include "Accessor/Accessor.h"
 #include "TimeLimit.h"
 
@@ -66,24 +67,25 @@ namespace Memory
 					return nullptr;
 				}
 
-				m_used = true;
+				if (m_used)
+				{
+					return static_cast<IAccessor*>(m_memory);
+				}
+				else
+				{
+					m_used = true;
 
-				IAccessor* accessor = new (m_memory) Accessor<T>(m_totalCount);
-				return accessor;
+					IAccessor* accessor = new (m_memory) Accessor<T>(m_totalCount);
+					return accessor;
+				}
 			}
 
-			bool Sweep(TimeLimit& timeLimit)
+			void Sweep()
 			{
-				timeLimit.SetInterval(0);
-				if (!timeLimit.HasTime())
-				{
-					return false;
-				}
-
 				IAccessor* accessor = static_cast<IAccessor*>(m_memory);
 				if (nullptr == accessor)
 				{
-					return true;
+					return;
 				}
 
 				const IAccessor::eStatus status = accessor->GetStatus();
@@ -91,9 +93,9 @@ namespace Memory
 				{
 					accessor->Destruct();
 					accessor->~IAccessor();
-				}
 
-				return true;
+					m_used = false;
+				}
 			}
 
 			size_t GetChunkSize() const override
@@ -116,12 +118,17 @@ namespace Memory
 				return m_used ? 1.0f : 0.0f;
 			}
 
+			bool Empty() const override
+			{
+				return !m_used;
+			}
+
 		private :
 			size_t m_chunkSize = 0;
 			size_t m_paddingSize = 0;
 			size_t m_totalCount = 0;
 
-			Arena m_arena;
+			wtr::Arena m_arena;
 
 			void* m_memory;
 

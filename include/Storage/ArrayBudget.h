@@ -1,7 +1,8 @@
 #ifndef __MEMORY_ARRAYBUDGET_H__
 #define __MEMORY_ARRAYBUDGET_H__
 
-#include "Container/List.h"
+#include <Container/include/List.h>
+
 #include "Storage/Array.h"
 
 namespace Memory
@@ -11,25 +12,27 @@ namespace Memory
 	class ArrayBudget
 	{
 		public :
+			using ArrayCreater = IStorage * (*)();
+			using ArrayIterator = wtr::List<IStorage*>::Iterator;
+
 			struct ArrayEntry
 			{
-				List<IStorage*>::Iterator handle;
+				ArrayIterator handle;
 				IStorage* array;
 
 				ArrayEntry();
 			};
-
-			using ArrayCreater = IStorage*(*)();
 			
 		public :
 			ArrayBudget();
 			ArrayBudget(const ArrayBudget& other) = delete;
 			explicit ArrayBudget(ArrayBudget&& other) noexcept;
+			ArrayBudget& operator=(ArrayBudget&& other) noexcept;
 			~ArrayBudget();
 
 		public :
 			template<typename T>
-			void Init()
+			void Init(const std::string& typeName)
 			{
 				m_arrayCreater = []() -> IStorage*
 				{
@@ -37,21 +40,28 @@ namespace Memory
 
 					return array;
 				};
+
+				m_typeName = typeName;
 			}
 
 		public :
 			ArrayEntry GetArray(const size_t count);
-			void RemoveArray(ArrayEntry& ArrayEntry);
 
 			void Release();
-			bool Sweep(TimeLimit& timeLimit);
+			void Remove();
+			void Sweep();
+
+			bool Empty() const;
 
 		private :
 			IStorage* CreateArray(const size_t count);
+			ArrayIterator RemoveArray(const ArrayEntry& ArrayEntry);
 
 		private :
-			List<IStorage*> m_arrayList;
+			wtr::List<IStorage*> m_arrayList;
 			ArrayCreater m_arrayCreater;
+
+			std::string m_typeName;
 	};
 };
 

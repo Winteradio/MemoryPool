@@ -14,19 +14,39 @@ namespace Memory
 
 	PoolBudget::PoolBudget()
 		: m_poolList()
-		, m_poolCreater()
-		, m_poolSize()
+		, m_poolCreater(nullptr)
+		, m_poolSize(0)
+		, m_typeName()
 	{}
 
 	PoolBudget::PoolBudget(PoolBudget&& other) noexcept
 		: m_poolCreater(std::move(other.m_poolCreater))
 		, m_poolSize(std::move(other.m_poolSize))
+		, m_typeName(std::move(other.m_typeName))
 	{
 		const size_t endIndex = static_cast<size_t>(eDensity::eMax);
 		for (size_t index = 0; index < endIndex; index++)
 		{
 			m_poolList[index] = std::move(other.m_poolList[index]);
 		}
+	}
+
+	PoolBudget& PoolBudget::operator=(PoolBudget&& other) noexcept
+	{
+		if (this != &other)
+		{
+			m_poolCreater = std::move(other.m_poolCreater);
+			m_poolSize = std::move(other.m_poolSize);
+			m_typeName = std::move(other.m_typeName);
+
+			const size_t endIndex = static_cast<size_t>(eDensity::eMax);
+			for (size_t index = 0; index < endIndex; index++)
+			{
+				m_poolList[index] = std::move(other.m_poolList[index]);
+			}
+		}
+
+		return *this;
 	}
 
 	PoolBudget::~PoolBudget()
@@ -114,11 +134,11 @@ namespace Memory
 		return poolEntry;
 	}
 
-	void PoolBudget::RemovePool(PoolEntry& poolEntry)
+	PoolBudget::PoolIterator PoolBudget::RemovePool(const PoolEntry& poolEntry)
 	{
 		if (nullptr == poolEntry.pool || eDensity::eMax == poolEntry.type)
 		{
-			return;
+			return poolEntry.handle;
 		}
 
 		const size_t index = static_cast<size_t>(poolEntry.type);
@@ -126,14 +146,16 @@ namespace Memory
 		auto& poolList = m_poolList[index];
 		if (poolList.End() == poolEntry.handle)
 		{
-			return;
+			return poolList.End();
 		}
 
-		poolList.Erase(poolEntry.handle);
+		LOGINFO() << "[BUDGET] Remove the pool(" << poolEntry.pool << ") "
+			<< " | type : " << m_typeName
+			<< " | size : " << poolEntry.pool->GetTotalSize()
+			<< " | chunk : " << poolEntry.pool->GetChunkSize()
+			<< " | count : " << poolEntry.pool->GetTotalCount();
 
-		poolEntry.handle = nullptr;
-		poolEntry.pool = nullptr;
-		poolEntry.type = eDensity::eMax;
+		return poolList.Erase(poolEntry.handle);
 	}
 
 	void PoolBudget::UpdatePool(PoolEntry& poolEntry)
@@ -145,10 +167,6 @@ namespace Memory
 
 		const eDensity eCurrentType = GetDensity(poolEntry.pool);
 		const eDensity eOriginType = poolEntry.type;
-		if (eCurrentType == eOriginType)
-		{
-			return;
-		}
 
 		const size_t origin = static_cast<size_t>(eOriginType);
 		const size_t current = static_cast<size_t>(eCurrentType);
@@ -164,11 +182,19 @@ namespace Memory
 		currentList.Splice(currentList.Begin(), originList, poolEntry.handle);
 
 		poolEntry.type = eCurrentType;
+
+		LOGINFO() << "[BUCKET] Update the pool(" << poolEntry.pool << ") "
+			<< " | type : " << m_typeName 
+			<< " | updated(" 
+			<< densityArray[static_cast<size_t>(eOriginType)].second << "->"
+			<< densityArray[static_cast<size_t>(eCurrentType)].second << ")";
+
+		return;
 	}
 
 	void PoolBudget::Release()
 	{
-		LOGINFO() << "[MEMORY] Release the pool bucket(" << this << ")";
+		LOGINFO() << "[BUDGET] Release, the pool bucket(" << this << ") | type : " << m_typeName;
 
 		for (auto& poolList : m_poolList)
 		{
@@ -190,26 +216,32 @@ namespace Memory
 		}
 	}
 
-	void PoolBudget::Scan()
+	void PoolBudget::Remove()
 	{
-		const size_t endIndex = static_cast<size_t>(eDensity::eMax);
-		for (size_t index = 0; index < endIndex; index++)
-		{
-			auto& poolList = m_poolList[index];
-			for (auto itr = poolList.Begin(); itr != poolList.End(); itr++)
-			{
-				auto* pool = *itr;
-				if (nullptr == pool)
-				{
-					continue;
-				}
+		const size_t sparseIndex = static_cast<size_t>(eDensity::eSparse);
+		auto& poolList = m_poolList[sparseIndex];
 
-				pool->Scan();
+		auto itr = poolList.Begin();
+		while (itr != poolList.End())
+		{
+			auto* pool = *itr;
+			if (nullptr != pool && pool->Empty())
+			{
+				PoolEntry poolEntry;
+				poolEntry.handle = itr;
+				poolEntry.pool = pool;
+				poolEntry.type = eDensity::eSparse;
+
+				itr = RemovePool(poolEntry);
+			}
+			else
+			{
+				itr++;
 			}
 		}
 	}
 
-	bool PoolBudget::Sweep(TimeLimit& timeLimit)
+	void PoolBudget::Sweep()
 	{
 		const size_t endIndex = static_cast<size_t>(eDensity::eMax);
 		for (size_t index = 0; index < endIndex; index++)
@@ -223,7 +255,26 @@ namespace Memory
 					continue;
 				}
 
-				if (!pool->Sweep(timeLimit))
+				pool->Sweep();
+			}
+		}
+	}
+
+	bool PoolBudget::Purge(TimeLimit& timeLimit)
+	{
+		const size_t endIndex = static_cast<size_t>(eDensity::eMax);
+		for (size_t index = 0; index < endIndex; index++)
+		{
+			auto& poolList = m_poolList[index];
+			for (auto itr = poolList.Begin(); itr != poolList.End(); itr++)
+			{
+				auto* pool = *itr;
+				if (nullptr == pool)
+				{
+					continue;
+				}
+
+				if (!pool->Purge(timeLimit))
 				{
 					return false;
 				}
@@ -241,20 +292,26 @@ namespace Memory
 			const eDensity density = static_cast<eDensity>(index);
 
 			auto& poolList = m_poolList[index];
-			for (auto itr = poolList.Begin(); itr != poolList.End(); itr++)
+			auto itr = poolList.Begin();
+			while (itr != poolList.End())
 			{
 				auto* pool = *itr;
-				if (nullptr == pool)
-				{
-					continue;
-				}
 
 				PoolEntry poolEntry;
 				poolEntry.handle = itr;
 				poolEntry.pool = pool;
 				poolEntry.type = density;
 
-				UpdatePool(poolEntry);
+				if (nullptr != pool && CheckDensity(poolEntry))
+				{
+					auto nextItr = ++itr;
+					UpdatePool(poolEntry);
+					itr = nextItr;
+				}
+				else
+				{
+					itr++;
+				}
 			}
 		}
 	}
@@ -274,7 +331,8 @@ namespace Memory
 
 		pool->Init(m_poolSize);
 
-		LOGINFO() << "[MEMORY] Create the pool(" << pool << ") "
+		LOGINFO() << "[BUDGET] Create the pool(" << pool << ") "
+			<< " | type : " << m_typeName
 			<< " | size : " << pool->GetTotalSize() 
 			<< " | chunk : " << pool->GetChunkSize() 
 			<< " | count : " << pool->GetTotalCount();
@@ -282,7 +340,7 @@ namespace Memory
 		return pool;
 	}
 
-	PoolBudget::eDensity PoolBudget::GetDensity(const IPool* pool)
+	PoolBudget::eDensity PoolBudget::GetDensity(const IPool* pool) const
 	{
 		if (nullptr == pool)
 		{
@@ -306,5 +364,28 @@ namespace Memory
 		{
 			return eDensity::eFull;
 		}
+	}
+
+	bool PoolBudget::CheckDensity(const PoolEntry& poolEntry) const
+	{
+		const eDensity eCurrentType = GetDensity(poolEntry.pool);
+		const eDensity eOriginType = poolEntry.type;
+
+		return !(eCurrentType == eOriginType);
+	}
+	
+	bool PoolBudget::Empty() const
+	{
+		const size_t endIndex = static_cast<size_t>(eDensity::eMax);
+		for (size_t index = 0; index < endIndex; index++)
+		{
+			auto& poolList = m_poolList[index];
+			if (!poolList.Empty())
+			{
+				return false;
+			}
+		}
+
+		return true;
 	}
 }

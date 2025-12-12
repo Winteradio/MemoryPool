@@ -7,3 +7,6 @@
 [submodule "external/Reflection"]
 	path = external/Reflection
 	url = https://github.com/Winteradio/Reflection.git
+[submodule "external/Container"]
+	path = external/Container
+	url = https://github.com/Winteradio/Container.git

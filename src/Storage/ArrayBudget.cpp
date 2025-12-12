@@ -13,12 +13,26 @@ namespace Memory
 	ArrayBudget::ArrayBudget()
 		: m_arrayList()
 		, m_arrayCreater()
+		, m_typeName()
 	{}
 
 	ArrayBudget::ArrayBudget(ArrayBudget&& other) noexcept
 		: m_arrayList(std::move(other.m_arrayList))
 		, m_arrayCreater(std::move(other.m_arrayCreater))
+		, m_typeName(std::move(other.m_typeName))
 	{}
+
+	ArrayBudget& ArrayBudget::operator=(ArrayBudget&& other) noexcept
+	{
+		if (this != &other)
+		{
+			m_arrayList = std::move(other.m_arrayList);
+			m_arrayCreater = std::move(other.m_arrayCreater);
+			m_typeName = std::move(other.m_typeName);
+		}
+
+		return *this;
+	}
 
 	ArrayBudget::~ArrayBudget()
 	{
@@ -37,26 +51,25 @@ namespace Memory
 		return arrayEntry;
 	}
 
-	void ArrayBudget::RemoveArray(ArrayEntry& arrayEntry)
+	ArrayBudget::ArrayIterator ArrayBudget::RemoveArray(const ArrayEntry& arrayEntry)
 	{
 		if (nullptr == arrayEntry.array)
 		{
-			return;
+			return arrayEntry.handle;
 		}
 
 		LOGINFO() << "[MEMORY] Remove the array(" << arrayEntry.array << ") "
+			<< " | type : " << m_typeName
 			<< " | size : " << arrayEntry.array->GetTotalSize()
 			<< " | chunk : " << arrayEntry.array->GetChunkSize()
 			<< " | count : " << arrayEntry.array->GetTotalCount();
 
-		m_arrayList.Erase(arrayEntry.handle);
-		arrayEntry.handle = nullptr;
-		arrayEntry.array = nullptr;
+		return m_arrayList.Erase(arrayEntry.handle);
 	}
 
 	void ArrayBudget::Release()
 	{
-		LOGINFO() << "[MEMORY] Release the array bucket(" << this << ")";
+		LOGINFO() << "[BUDGET] Release, the array bucket(" << this << ") | type : " << m_typeName;
 
 		auto itr = m_arrayList.Begin();
 		while (itr != m_arrayList.End())
@@ -74,25 +87,40 @@ namespace Memory
 		m_arrayList.Clear();
 	}
 
-	bool ArrayBudget::Sweep(TimeLimit& timeLimit)
+	void ArrayBudget::Sweep()
 	{
-		LOGINFO() << "[BUCKET] Start the array's sweep";
-
 		auto itr = m_arrayList.Begin();
 		while (itr != m_arrayList.End())
 		{
 			auto* array = *itr;
-			if (nullptr != array && array->Sweep(timeLimit))
+			if (nullptr != array)
 			{
-				return false;
+				array->Sweep();
 			}
 
 			itr++;
 		}
+	}
 
-		LOGINFO() << "[BUCKET] Complete the array's sweep";
+	void ArrayBudget::Remove()
+	{
+		auto itr = m_arrayList.Begin();
+		while (itr != m_arrayList.End())
+		{
+			auto* array = *itr;
+			if (nullptr != array && array->Empty())
+			{
+				ArrayEntry arrayEntry;
+				arrayEntry.array = array;
+				arrayEntry.handle = itr;
 
-		return true;
+				itr = RemoveArray(arrayEntry);
+			}
+			else
+			{
+				itr++;
+			}
+		}
 	}
 
 	IStorage* ArrayBudget::CreateArray(const size_t count)
@@ -110,11 +138,17 @@ namespace Memory
 
 		array->Init(count);
 
-		LOGINFO() << "[MEMORY] Create the array(" << array << ") " 
+		LOGINFO() << "[BUDGET] Create the array(" << array << ") " 
+			<< " | type : " << m_typeName
 			<< " | size : " << array->GetTotalSize() 
 			<< " | chunk : " << array->GetChunkSize() 
 			<< " | count : " << array->GetTotalCount();
 
 		return array;
+	}
+
+	bool ArrayBudget::Empty() const
+	{
+		return m_arrayList.Empty();
 	}
 }

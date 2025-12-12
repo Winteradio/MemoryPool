@@ -16,12 +16,13 @@ namespace Memory
 			virtual void Clear() = 0;
 			
 			virtual IAccessor* Acquire() = 0;
-			virtual bool Sweep(TimeLimit& timeLimit) = 0;
+			virtual void Sweep() = 0;
 
 			virtual size_t GetChunkSize() const = 0;
 			virtual size_t GetTotalSize() const = 0;
 			virtual size_t GetTotalCount() const = 0;
 			virtual float GetUsedRatio() const = 0; 
+			virtual bool Empty() const = 0;
 	};
 }
 

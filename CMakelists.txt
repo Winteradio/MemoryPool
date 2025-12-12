@@ -12,12 +12,12 @@ project(${PROJECT_NAME} LANGUAGES CXX)
 # ------ Create the library ------ #
 include(${CMAKE_SOURCE_DIR}/external/CMake/Library.cmake)
 
-option(BUILD_SHARED_LIBS "Build a shared library instead of a static one" OFF)
+set(LIBRARY_TYPE "SHARED" CACHE STRING "Build a shared library instead of a static one")
 
 set(MAIN_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(HEADER_DIR ${MAIN_DIR}/include)
 set(SOURCE_DIR ${MAIN_DIR}/src)
-set(EXTERNAL_DIR ${MAIN_DIR}/external)
+set(EXTERNAL_DIR ${CMAKE_SOURCE_DIR}/external)
 
 set(INCLUDE_DIR_LIST
     ${MAIN_DIR}/include
@@ -32,9 +32,6 @@ set(HEADER_LIST
     ${HEADER_DIR}/Accessor/Accessor.h
 
     ${HEADER_DIR}/Collector/GarbageCollector.h
-
-    ${HEADER_DIR}/Container/List.h
-    ${HEADER_DIR}/Container/Arena.h
 
     ${HEADER_DIR}/Storage/IStorage.h
     ${HEADER_DIR}/Storage/Array.h
@@ -54,15 +51,13 @@ set(SOURCE_LIST
 
     ${SOURCE_DIR}/Collector/GarbageCollector.cpp
 
-    ${SOURCE_DIR}/Container/Arena.cpp
-
     ${SOURCE_DIR}/Storage/ArrayBudget.cpp
     ${SOURCE_DIR}/Storage/PoolBudget.cpp
     ${SOURCE_DIR}/Storage/StorageManager.cpp
 )
 
 create_library(
-    SHARED_LIBRARY ${BUILD_SHARED_LIBS}
+    LIBRARY_TYPE ${LIBRARY_TYPE}
     TARGET_NAME ${PROJECT_NAME}
     PUBLIC_HEADERS ${HEADER_LIST}
     PRIVATE_SOURCES ${SOURCE_LIST}
@@ -70,8 +65,7 @@ create_library(
 
 install_library(
     TARGET_NAME ${PROJECT_NAME}
-    PUBLIC_HEADERS ${HEADER_LIST}
-    PUBLIC_INCLUDE_DIRS ${INCLUDE_DIR_LIST}
+    INCLUDE_DIRS ${INCLUDE_DIR_LIST}
 )
 
 # ------ Set the project options ------ #
@@ -79,7 +73,7 @@ include(${CMAKE_SOURCE_DIR}/external/CMake/Project.cmake)
 
 project_options()
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${EXTERNAL_DIR})
+target_include_directories(${PROJECT_NAME} PUBLIC ${HEADER_DIR} ${EXTERNAL_DIR})
 target_link_libraries(${PROJECT_NAME} PUBLIC ReflectionProject LogProject)
 
 # ------ Add the sub modules ------ #
@@ -90,6 +84,9 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/external/Reflection Reflection)
 
 set(LOG_DEMO_FILE OFF)
 add_subdirectory(${CMAKE_SOURCE_DIR}/external/Log Log)
+
+set(CONTAINER_DEMO_FILE OFF)
+add_subdirectory(${CMAKE_SOURCE_DIR}/external/Container Container)
 
 # ------ Create the Demofile ------ #
 option(MEMORY_DEMO_FILE "Build the demo file" ON)
