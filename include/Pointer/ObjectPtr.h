@@ -95,6 +95,16 @@ namespace Memory
 				return m_instance;
 			}
 
+			explicit operator bool() const
+			{
+				return nullptr != m_accessor && nullptr != m_instance;
+			}
+
+			bool operator!() const
+			{
+				return nullptr == m_accessor || nullptr == m_instance;
+			}
+
 		public :
 			const Reflection::TypeInfo* GetPureType() const override
 			{
@@ -124,6 +134,18 @@ namespace Memory
 				if (nullptr != m_accessor)
 				{
 					m_accessor->SetStatus(IAccessor::eStatus::eUnreachable);
+				}
+			}
+
+			bool IsMakred() const
+			{
+				if (nullptr != m_accessor)
+				{
+					return IAccessor::eStatus::eMakred == m_accessor->GetStatus();
+				}
+				else
+				{
+					return false;
 				}
 			}
 

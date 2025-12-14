@@ -89,6 +89,11 @@ namespace Memory
 			const BasePtr* basePtr = m_graphStack.Back();
 			m_graphStack.PopBack();
 
+			if (basePtr->IsMarked())
+			{
+				continue;
+			}
+
 			basePtr->Mark();
 
 			const Reflection::TypeInfo* pureType = basePtr->GetPureType();

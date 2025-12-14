@@ -21,6 +21,7 @@ namespace Memory
 			virtual const void* GetPointer() const = 0;
 			virtual void Mark() const = 0;
 			virtual void Unreachable() const = 0;
+			virtual bool IsMarked() const = 0;
 	};
 };
 
