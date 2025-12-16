@@ -165,6 +165,8 @@ namespace Memory
 					}
 					else
 					{
+						accessor->SetStatus(IAccessor::eStatus::eUnreachable);
+
 						itr++;
 					}
 				}

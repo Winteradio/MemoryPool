@@ -57,7 +57,7 @@ namespace Memory
 		for (size_t index = 0; index <= endIndex; index++)
 		{
 			auto& poolList = m_poolList[index];
-			if (!poolList.Empty())
+			if (poolList.Empty())
 			{
 				empty = true;
 
@@ -65,7 +65,7 @@ namespace Memory
 			}
 		}
 
-		if (empty)
+		if (!empty)
 		{
 			Release();
 		}

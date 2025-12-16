@@ -9,7 +9,7 @@ namespace Memory
 	{
 		public :
 			using Clock = std::chrono::high_resolution_clock;
-			using Duration = std::chrono::nanoseconds;
+			using Duration = std::chrono::milliseconds;
 
 		public :
 			TimeLimit();

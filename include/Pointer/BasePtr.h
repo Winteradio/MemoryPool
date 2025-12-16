@@ -18,10 +18,12 @@ namespace Memory
 
 		public :
 			virtual const Reflection::TypeInfo* GetPureType() const = 0;
+			virtual const Reflection::TypeInfo* GetRuntimeType() const = 0;
 			virtual const void* GetPointer() const = 0;
 			virtual void Mark() const = 0;
 			virtual void Unreachable() const = 0;
 			virtual bool IsMarked() const = 0;
+			virtual bool IsValid() const = 0;
 	};
 };
 
