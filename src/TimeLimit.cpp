@@ -45,7 +45,7 @@ namespace Memory
 			}
 			else
 			{
-				m_current -= timeDuration;
+				m_current -= std::chrono::duration_cast<Duration>(timeDuration);
 			}
 
 			m_startTime = currentTime;

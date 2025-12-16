@@ -8,7 +8,7 @@ namespace Memory
 	StorageManager::StorageManager()
 		: m_poolMap()
 		, m_arrayMap()
-		, m_poolSize(512)
+		, m_poolSize(1024)
 	{}
 
 	StorageManager::~StorageManager()

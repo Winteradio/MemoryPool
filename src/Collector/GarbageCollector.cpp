@@ -1,7 +1,7 @@
 #include "Collector/GarbageCollector.h"
 
-#include "Core.h"
 #include "Log/include/Log.h"
+#include "Core.h"
 
 #include <queue>
 
@@ -13,15 +13,16 @@ namespace Memory
 		, m_timeLimit()
 		, m_mutex()
 		, m_status(eStatus::eIdle)
-	{}
+	{
+		m_graphStack.Reserve(4096);
+		m_timeLimit.Init(100);
+	}
 
 	GarbageCollector::~GarbageCollector()
 	{}
 
 	void GarbageCollector::Init(const size_t sweepTime)
 	{
-		m_graphStack.Reserve(4096);
-
 		m_timeLimit.Init(sweepTime);
 	}
 
@@ -80,8 +81,6 @@ namespace Memory
 
 	void GarbageCollector::Mark()
 	{
-		static const Reflection::TypeInfo* baseType = Reflection::TypeInfo::Get<BasePtr>();
-
 		LOGINFO() << "[COLLECTOR] GC Cycle - Mark";
 
 		while (!m_graphStack.Empty())
@@ -89,93 +88,37 @@ namespace Memory
 			const BasePtr* basePtr = m_graphStack.Back();
 			m_graphStack.PopBack();
 
+			if (nullptr == basePtr || !basePtr->IsValid() || basePtr->IsMarked())
+			{
+				continue;
+			}
+
 			basePtr->Mark();
 
-			const Reflection::TypeInfo* pureType = basePtr->GetPureType();
-			const Reflection::TypeInfo::PropertyMap& properties = pureType->GetProperties();
+			const Reflection::TypeInfo* runtimeType = basePtr->GetRuntimeType();
+			const Reflection::TypeInfo::PropertyMap& properties = runtimeType->GetProperties();
 
 			const void* rawInstance = basePtr->GetPointer();
 
-			for (auto [name, property] : properties)
+			for (const auto& [name, propertyInfo] : properties)
 			{
-				const void* rawProperty = property->GetRaw(rawInstance);
+				const eDataType eType = GetDataType(propertyInfo);
+				const void* rawProperty = propertyInfo->GetRaw(rawInstance);
 
-				if (const Reflection::ArrayPropertyInfo* arrayProperty = Reflection::Cast<const Reflection::ArrayPropertyInfo*>(property))
+				if (eDataType::eContainer == eType)
 				{
-					const Reflection::TypeInfo* valueType = arrayProperty->GetValueType();
-					if (!Reflection::IsChild(baseType, valueType))
-					{
-						continue;
-					}
-
-					auto beginItr = arrayProperty->begin(rawProperty);
-					auto endItr = arrayProperty->end(rawProperty);
-					
-					for (auto itr = beginItr; itr != endItr; itr++)
-					{
-						const BasePtr* rawValue = static_cast<const BasePtr*>(itr.get());
-						m_graphStack.PushBack(rawValue);
-					}
+					MarkContainer(rawProperty, propertyInfo, m_graphStack);
 				}
-				else if (const Reflection::SetPropertyInfo* setProperty = Reflection::Cast<const Reflection::SetPropertyInfo*>(property))
+				else if (eDataType::eStruct == eType)
 				{
-					const Reflection::TypeInfo* valueType = setProperty->GetValueType();
-					if (!Reflection::IsChild(baseType, valueType))
-					{
-						continue;
-					}
-
-					auto beginItr = arrayProperty->begin(rawProperty);
-					auto endItr = arrayProperty->end(rawProperty);
-
-					for (auto itr = beginItr; itr != endItr; itr++)
-					{
-						const BasePtr* rawValue = static_cast<const BasePtr*>(itr.get());
-						m_graphStack.PushBack(rawValue);
-					}
+					MarkStruct(rawProperty, propertyInfo, m_graphStack);
 				}
-				else if (const Reflection::MapPropertyInfo* mapProperty = Reflection::Cast<const Reflection::MapPropertyInfo*>(property))
+				else if (eDataType::eObject == eType)
 				{
-					const Reflection::TypeInfo* keyType = mapProperty->GetKeyType();
-					const Reflection::TypeInfo* mappedType = mapProperty->GetMappedType();
-					
-					const bool keyMarked = Reflection::IsChild(baseType, keyType);
-					const bool mappedMarked = Reflection::IsChild(baseType, mappedType);
-					if (!keyMarked && !mappedMarked)
-					{
-						continue;
-					}
-
-					auto beginItr = mapProperty->begin(rawProperty);
-					auto endItr = mapProperty->end(rawProperty);
-
-					for (auto itr = beginItr; itr != endItr; itr++)
-					{
-						const void* rawValue = itr.get();
-						if (keyMarked)
-						{
-							const BasePtr* rawKey = static_cast<const BasePtr*>(mapProperty->GetRawKey(rawValue));
-							m_graphStack.PushBack(rawKey);
-						}
-
-						if (mappedMarked)
-						{
-							const BasePtr* rawMapped = static_cast<const BasePtr*>(mapProperty->GetRawMapped(rawValue));
-							m_graphStack.PushBack(rawMapped);
-						}
-					}
+					MarkObject(rawProperty, propertyInfo, m_graphStack);
 				}
 				else
-				{
-					const Reflection::TypeInfo* propertyType = property->GetPropertyType();
-					if (!Reflection::IsChild(baseType, propertyType))
-					{
-						continue;
-					}
-
-					const BasePtr* rawValue = static_cast<const BasePtr*>(rawProperty);
-					m_graphStack.PushBack(rawValue);
-				}
+				{}
 			}
 		}
 
@@ -207,5 +150,163 @@ namespace Memory
 		{
 			m_status = eStatus::ePurging;
 		}
+	}
+
+	void GarbageCollector::MarkContainer(const void* rawProperty, const Reflection::PropertyInfo* propertyInfo, wtr::DynamicArray<const BasePtr*>& graphStack)
+	{
+		static const Reflection::TypeInfo* baseType = Reflection::TypeInfo::Get<BasePtr>();
+
+		if (const Reflection::ArrayPropertyInfo* arrayProperty = Reflection::Cast<const Reflection::ArrayPropertyInfo*>(propertyInfo))
+		{
+			const Reflection::TypeInfo* valueType = arrayProperty->GetValueType();
+			if (!Reflection::IsChild(baseType, valueType))
+			{
+				return;
+			}
+
+			auto beginItr = arrayProperty->begin(rawProperty);
+			auto endItr = arrayProperty->end(rawProperty);
+
+			for (auto itr = beginItr; itr != endItr; itr++)
+			{
+				const BasePtr* rawValue = static_cast<const BasePtr*>(itr.get());
+				if (rawValue->IsValid())
+				{
+					graphStack.PushBack(rawValue);
+				}
+			}
+		}
+		else if (const Reflection::SetPropertyInfo* setProperty = Reflection::Cast<const Reflection::SetPropertyInfo*>(propertyInfo))
+		{
+			const Reflection::TypeInfo* valueType = setProperty->GetValueType();
+			if (!Reflection::IsChild(baseType, valueType))
+			{
+				return;
+			}
+
+			auto beginItr = setProperty->begin(rawProperty);
+			auto endItr = setProperty->end(rawProperty);
+
+			for (auto itr = beginItr; itr != endItr; itr++)
+			{
+				const BasePtr* rawValue = static_cast<const BasePtr*>(itr.get());
+				if (rawValue->IsValid())
+				{
+					graphStack.PushBack(rawValue);
+				}
+			}
+		}
+		else if (const Reflection::MapPropertyInfo* mapProperty = Reflection::Cast<const Reflection::MapPropertyInfo*>(propertyInfo))
+		{
+			const Reflection::TypeInfo* keyType = mapProperty->GetKeyType();
+			const Reflection::TypeInfo* mappedType = mapProperty->GetMappedType();
+
+			const bool keyMarked = Reflection::IsChild(baseType, keyType);
+			const bool mappedMarked = Reflection::IsChild(baseType, mappedType);
+			if (!keyMarked && !mappedMarked)
+			{
+				return;
+			}
+
+			auto beginItr = mapProperty->begin(rawProperty);
+			auto endItr = mapProperty->end(rawProperty);
+
+			for (auto itr = beginItr; itr != endItr; itr++)
+			{
+				const void* rawValue = itr.get();
+				if (keyMarked)
+				{
+					const BasePtr* rawKey = static_cast<const BasePtr*>(mapProperty->GetRawKey(rawValue));
+					if (rawKey->IsValid())
+					{
+						graphStack.PushBack(rawKey);
+					}
+				}
+
+				if (mappedMarked)
+				{
+					const BasePtr* rawMapped = static_cast<const BasePtr*>(mapProperty->GetRawMapped(rawValue));
+					if (rawMapped->IsValid())
+					{
+						graphStack.PushBack(rawMapped);
+					}
+				}
+			}
+		}
+		else
+		{
+			return;
+		}
+	}
+
+	void GarbageCollector::MarkStruct(const void* rawProperty, const Reflection::PropertyInfo* propertyInfo, wtr::DynamicArray<const BasePtr*>& graphStack)
+	{
+		const Reflection::TypeInfo* propertyType = propertyInfo->GetPropertyType();
+		const Reflection::TypeInfo::PropertyMap& propertyMap = propertyType->GetProperties();
+
+		for (const auto& [name, memberInfo] : propertyMap)
+		{
+			const void* rawMember = memberInfo->GetRaw(rawProperty);
+
+			const eDataType eType = GetDataType(memberInfo);
+
+			if (eDataType::eContainer == eType)
+			{
+				MarkContainer(rawMember, memberInfo, graphStack);
+			}
+			else if (eDataType::eStruct == eType)
+			{
+				MarkStruct(rawMember, memberInfo, graphStack);
+			}
+			else if (eDataType::eObject == eType)
+			{
+				MarkObject(rawMember, memberInfo, graphStack);
+			}
+			else
+			{
+			}
+		}
+	}
+
+	void GarbageCollector::MarkObject(const void* rawProperty, const Reflection::PropertyInfo* propertyInfo, wtr::DynamicArray<const BasePtr*>& graphStack)
+	{
+		static const Reflection::TypeInfo* baseType = Reflection::TypeInfo::Get<BasePtr>();
+
+		const Reflection::TypeInfo* propertyType = propertyInfo->GetPropertyType();
+		if (!Reflection::IsChild(baseType, propertyType))
+		{
+			return;
+		}
+
+		const BasePtr* rawValue = static_cast<const BasePtr*>(rawProperty);
+		if (rawValue->IsValid())
+		{
+			graphStack.PushBack(rawValue);
+		}
+	}
+
+	GarbageCollector::eDataType GarbageCollector::GetDataType(const Reflection::PropertyInfo* propertyInfo) const
+	{
+		const Reflection::ContainerPropertyInfo* containerInfo = Reflection::Cast<const Reflection::ContainerPropertyInfo*>(propertyInfo);
+		if (nullptr != containerInfo)
+		{
+			return eDataType::eContainer;
+		}
+
+		const Reflection::TypeInfo* propertyType = propertyInfo->GetPropertyType();
+		const Reflection::TypeInfo* baseType = Reflection::TypeInfo::Get<BasePtr>();
+
+		if (Reflection::IsChild(baseType, propertyType))
+		{
+			return eDataType::eObject;
+		}
+
+		const Reflection::TypeInfo::PropertyMap& propertyMap = propertyType->GetProperties();
+		if (!propertyMap.empty())
+		{
+			return eDataType::eStruct;
+		}
+
+		return eDataType::eNone;
 	}
 };

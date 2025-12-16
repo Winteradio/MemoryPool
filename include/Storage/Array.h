@@ -96,6 +96,10 @@ namespace Memory
 
 					m_used = false;
 				}
+				else
+				{
+					accessor->SetStatus(IAccessor::eStatus::eUnreachable);
+				}
 			}
 
 			size_t GetChunkSize() const override

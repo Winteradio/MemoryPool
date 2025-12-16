@@ -37,27 +37,31 @@ namespace Memory
 			template<typename T, typename... Args>
 			Accessor<T>* Create(Args&&... args)
 			{
-				std::lock_guard<std::mutex> lock(m_mutex);
-
-				PoolBudget& poolBudget = GetPool<T>();
-				PoolBudget::PoolEntry poolEntry = poolBudget.GetPool();
-				if (nullptr == poolEntry.pool)
+				PoolBudget::PoolEntry poolEntry;
+				Accessor<T>* accessor = nullptr;
 				{
-					return nullptr;
-				}
+					std::lock_guard<std::mutex> lock(m_mutex);
 
-				Accessor<T>* accessor = static_cast<Accessor<T>*>(poolEntry.pool->Acquire());
-				if (nullptr == accessor)
-				{
-					return nullptr;
+					PoolBudget& poolBudget = GetPool<T>();
+					poolEntry = poolBudget.GetPool();
+					if (nullptr == poolEntry.pool)
+					{
+						return nullptr;
+					}
+
+					accessor = static_cast<Accessor<T>*>(poolEntry.pool->Acquire());
+					if (nullptr == accessor)
+					{
+						return nullptr;
+					}
+
+					if (poolBudget.CheckDensity(poolEntry))
+					{
+						poolBudget.UpdatePool(poolEntry);
+					}
 				}
 
 				accessor->Construct(std::forward<Args>(args)...);
-
-				if (poolBudget.CheckDensity(poolEntry))
-				{
-					poolBudget.UpdatePool(poolEntry);
-				}
 
 				return accessor;
 			}
@@ -65,20 +69,26 @@ namespace Memory
 			template<typename T, typename... Args>
 			Accessor<T>* CreateArray(const size_t count, Args&&... args)
 			{
-				std::lock_guard<std::mutex> lock(m_mutex);
+				ArrayBudget::ArrayEntry arrayEntry;
+				Accessor<T>* accessor = nullptr;
 
-				ArrayBudget& arrayBudget = GetArray<T>();
-				ArrayBudget::ArrayEntry arrayEntry = arrayBudget.GetArray(count);
-				if (nullptr == arrayEntry.array)
 				{
-					return nullptr;
+					std::lock_guard<std::mutex> lock(m_mutex);
+
+					ArrayBudget& arrayBudget = GetArray<T>();
+					arrayEntry = arrayBudget.GetArray(count);
+					if (nullptr == arrayEntry.array)
+					{
+						return nullptr;
+					}
+
+					accessor = static_cast<Accessor<T>*>(arrayEntry.array->Acquire());
+					if (nullptr == accessor)
+					{
+						return nullptr;
+					}
 				}
 
-				Accessor<T>* accessor = static_cast<Accessor<T>*>(arrayEntry.array->Acquire());
-				if (nullptr == accessor)
-				{
-					return nullptr;
-				}
 				accessor->Construct(std::forward<Args>(args)...);
 
 				return accessor;

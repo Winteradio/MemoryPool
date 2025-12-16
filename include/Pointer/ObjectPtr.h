@@ -49,11 +49,8 @@ namespace Memory
 			>
 			ObjectPtr& operator=(const ObjectPtr<U>& other)
 			{
-				if (this != &other)
-				{
-					m_accessor = other.m_accessor;
-					m_instance = static_cast<T*>(other.m_instance);
-				}
+				m_accessor = other.m_accessor;
+				m_instance = static_cast<T*>(other.m_instance);
 
 				return *this;
 			}
@@ -95,10 +92,33 @@ namespace Memory
 				return m_instance;
 			}
 
+			explicit operator bool() const
+			{
+				return IsValid();
+			}
+
+			bool operator!() const
+			{
+				return !IsValid();
+			}
+
 		public :
 			const Reflection::TypeInfo* GetPureType() const override
 			{
 				return Reflection::TypeInfo::Get<T>();
+			}
+
+			const Reflection::TypeInfo* GetRuntimeType() const override
+			{
+				if (IsValid())
+				{
+					if constexpr (Reflection::Utils::HasRuntimeType<T>::value)
+					{
+						return m_instance->GetTypeInfo();
+					}
+				}
+
+				return GetPureType();
 			}
 
 			const void* GetPointer() const
@@ -111,7 +131,7 @@ namespace Memory
 				return m_accessor;
 			}
 
-			void Mark() const
+			void Mark() const override
 			{
 				if (nullptr != m_accessor)
 				{
@@ -119,12 +139,29 @@ namespace Memory
 				}
 			}
 
-			void Unreachable() const
+			void Unreachable() const override
 			{
 				if (nullptr != m_accessor)
 				{
 					m_accessor->SetStatus(IAccessor::eStatus::eUnreachable);
 				}
+			}
+
+			bool IsMarked() const override
+			{
+				if (nullptr != m_accessor)
+				{
+					return IAccessor::eStatus::eMarked == m_accessor->GetStatus();
+				}
+				else
+				{
+					return false;
+				}
+			}
+
+			bool IsValid() const override
+			{
+				return nullptr != m_accessor && nullptr != m_instance;
 			}
 
 		protected :
