@@ -4,6 +4,7 @@
 #include "Storage/StorageManager.h"
 #include "Collector/GarbageCollector.h"
 #include "Pointer/ObjectPtr.h"
+#include "Pointer/RefPtr.h"
 
 namespace Memory
 {
@@ -28,6 +29,14 @@ namespace Memory
 		Accessor<T>* accessor = GetStorage().CreateArray<T>(count ,std::forward<Args>(args)...);
 
 		return ObjectPtr<T[]>(accessor);
+	}
+
+	template<typename T, typename... Args>
+	RefPtr<T> MakeRef(Args&&... args)
+	{
+		RefPtr<T> ref = new T(std::forward<Args>(args)...);
+
+		return ref;
 	}
 
 	template<typename T, typename U>
