@@ -42,6 +42,7 @@ set(HEADER_LIST
 
     ${HEADER_DIR}/Pointer/BasePtr.h
     ${HEADER_DIR}/Pointer/ObjectPtr.h
+    ${HEADER_DIR}/Pointer/RefPtr.h
     ${HEADER_DIR}/Pointer/RootPtr.h
 )
 
@@ -55,6 +56,9 @@ set(SOURCE_LIST
     ${SOURCE_DIR}/Storage/PoolBudget.cpp
     ${SOURCE_DIR}/Storage/StorageManager.cpp
 )
+
+source_group(TREE "${HEADER_DIR}" PREFIX "include" FILES ${HEADER_LIST})
+source_group(TREE "${SOURCE_DIR}" PREFIX "src" FILES ${SOURCE_LIST})
 
 create_library(
     LIBRARY_TYPE ${LIBRARY_TYPE}

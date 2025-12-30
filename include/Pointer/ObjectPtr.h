@@ -23,25 +23,59 @@ namespace Memory
 				, m_instance(static_cast<T*>(accessor->GetPointer()))
 			{}
 
-			template<typename U, 
-				typename = Reflection::Utils::IsEnabled_t<
-					Reflection::Utils::IsSame<T, U>::value || Reflection::Utils::IsBase<T, U>::value>
-			>
-			ObjectPtr(const ObjectPtr<U>& other)
+			ObjectPtr(const ObjectPtr& other)
 				: m_accessor(other.m_accessor)
 				, m_instance(static_cast<T*>(other.m_instance))
 			{}
 
-			template<typename U, 
-				typename = Reflection::Utils::IsEnabled_t<
-					Reflection::Utils::IsSame<T, U>::value || Reflection::Utils::IsBase<T, U>::value>
-			>
-			ObjectPtr(ObjectPtr<U>&& other) noexcept
+			ObjectPtr(ObjectPtr&& other) noexcept
 				: m_accessor(std::move(other.m_accessor))
 				, m_instance(static_cast<T*>(other.m_instance))
 			{}
 
 			virtual ~ObjectPtr() = default;
+
+			ObjectPtr& operator=(const ObjectPtr& other)
+			{
+				if (this != &other)
+				{
+					m_accessor = other.m_accessor;
+					m_instance = static_cast<T*>(other.m_instance);
+				}
+
+				return *this;
+			}
+
+			ObjectPtr& operator=(ObjectPtr&& other)
+			{
+				if (this != &other)
+				{
+					m_accessor = std::move(other.m_accessor);
+					m_instance = static_cast<T*>(other.m_instance);
+				}
+
+				return *this;
+			}
+
+			template<typename U,
+				typename = Reflection::Utils::IsEnabled_t<
+				Reflection::Utils::IsSame<T, U>::value || Reflection::Utils::IsBase<T, U>::value>
+			>
+			ObjectPtr(const ObjectPtr<U>& other)
+				: m_accessor(other.m_accessor)
+				, m_instance(static_cast<T*>(other.m_instance))
+			{
+			}
+
+			template<typename U,
+				typename = Reflection::Utils::IsEnabled_t<
+				Reflection::Utils::IsSame<T, U>::value || Reflection::Utils::IsBase<T, U>::value>
+			>
+			ObjectPtr(ObjectPtr<U>&& other) noexcept
+				: m_accessor(std::move(other.m_accessor))
+				, m_instance(static_cast<T*>(other.m_instance))
+			{
+			}
 
 			template<typename U, 
 				typename = Reflection::Utils::IsEnabled_t<
