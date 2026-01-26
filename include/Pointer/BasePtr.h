@@ -1,10 +1,7 @@
 #ifndef __MEMORY_BASEPTR_H__
 #define __MEMORY_BASEPTR_H__
 
-namespace Reflection
-{
-	class TypeInfo;
-};
+#include <Reflection/include/Type/TypeMacro.h>
 
 namespace Memory
 {
