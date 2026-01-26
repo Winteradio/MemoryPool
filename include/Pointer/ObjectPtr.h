@@ -6,6 +6,8 @@
 
 #include "Reflection/include/Reflection.h"
 
+#include <cassert>
+
 namespace Memory
 {
 	template<typename T>
@@ -136,6 +138,20 @@ namespace Memory
 				return !IsValid();
 			}
 
+			bool operator==(const ObjectPtr<T>& other)
+			{
+				return m_instance == other.m_instance;
+			}
+
+			template<typename U,
+				typename = Reflection::Utils::IsEnabled_t<
+				Reflection::Utils::IsSame<T, U>::value || Reflection::Utils::IsBase<T, U>::value>
+			>
+			bool operator==(const ObjectPtr<U>& other)
+			{
+				return m_instance == other.m_instance;
+			}
+
 		public :
 			const Reflection::TypeInfo* GetPureType() const override
 			{
@@ -198,6 +214,12 @@ namespace Memory
 				return nullptr != m_accessor && nullptr != m_instance;
 			}
 
+			void Reset()
+			{
+				m_accessor = nullptr;
+				m_instance = nullptr;
+			}
+
 		protected :
 			template<typename U>
 			friend class ObjectPtr;
@@ -216,7 +238,7 @@ namespace Memory
 				: ObjectPtr<T>()
 			{}
 
-			ObjectPtr(Accessor<T>* accessor)
+			ObjectPtr(IAccessor* accessor)
 				: ObjectPtr<T>(accessor)
 			{}
 

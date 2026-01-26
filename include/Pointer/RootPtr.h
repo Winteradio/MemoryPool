@@ -12,7 +12,7 @@ namespace Memory
 		GENERATE(RootPtr);
 
 		public :
-			RootPtr() = delete;
+			RootPtr() = default;
 			RootPtr(const ObjectPtr<T>& other)
 				: ObjectPtr<T>(other)
 			{
@@ -35,6 +35,66 @@ namespace Memory
 				: ObjectPtr<T>(std::move(other))
 			{
 				GetCollector().AddRoot(this);
+			}
+
+			RootPtr& operator=(const ObjectPtr<T>& other)
+			{
+				if (this != &other)
+				{
+					if (this->IsValid())
+					{
+						GetCollector().RemoveRoot(this);
+					}
+
+					ObjectPtr::operator=(other);
+				}
+
+				return *this;
+			}
+
+			RootPtr& operator=(ObjectPtr<T>&& other) noexcept
+			{
+				if (this != &other)
+				{
+					if (this->IsValid())
+					{
+						GetCollector().RemoveRoot(this);
+					}
+
+					ObjectPtr::operator=(std::move(other));
+				}
+				
+				return *this;
+			}
+
+			RootPtr& operator=(const RootPtr<T>& other)
+			{
+				if (this != &other)
+				{
+					if (this->IsValid())
+					{
+						GetCollector().RemoveRoot(this);
+					}
+
+					ObjectPtr::operator=(other);
+				}
+
+				return *this;
+			}
+
+			RootPtr& operator=(RootPtr<T>&& other) noexcept
+			{
+				if (this != &other)
+				{
+					if (this->IsValid())
+					{
+						GetCollector().RemoveRoot(this);
+					}
+
+					ObjectPtr::operator=(std::move(other));
+				}
+
+				return *this;
 			}
 
 			virtual ~RootPtr()
@@ -72,6 +132,66 @@ namespace Memory
 				: ObjectPtr<T[]>(std::move(other))
 			{
 				GetCollector().AddRoot(this);
+			}
+
+			RootPtr& operator=(const ObjectPtr<T[]>& other)
+			{
+				if (this != &other)
+				{
+					if (this->IsValid())
+					{
+						GetCollector().RemoveRoot(this);
+					}
+
+					ObjectPtr::operator=(other);
+				}
+
+				return *this;
+			}
+
+			RootPtr& operator=(ObjectPtr<T[]>&& other) noexcept
+			{
+				if (this != &other)
+				{
+					if (this->IsValid())
+					{
+						GetCollector().RemoveRoot(this);
+					}
+
+					ObjectPtr::operator=(std::move(other));
+				}
+
+				return *this;
+			}
+
+			RootPtr& operator=(const RootPtr<T[]>& other)
+			{
+				if (this != &other)
+				{
+					if (this->IsValid())
+					{
+						GetCollector().RemoveRoot(this);
+					}
+
+					ObjectPtr::operator=(other);
+				}
+
+				return *this;
+			}
+
+			RootPtr& operator=(RootPtr<T[]>&& other) noexcept
+			{
+				if (this != &other)
+				{
+					if (this->IsValid())
+					{
+						GetCollector().RemoveRoot(this);
+					}
+
+					ObjectPtr::operator=(std::move(other));
+				}
+
+				return *this;
 			}
 
 			virtual ~RootPtr()

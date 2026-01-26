@@ -2,6 +2,7 @@
 #define __MEMORY_REFPTR_H__
 
 #include <Reflection/include/Utils.h>
+#include <assert.h>
 #include <atomic>
 
 namespace Memory
@@ -41,17 +42,18 @@ namespace Memory
 	template<typename T>
 	class RefPtr
 	{
-		static_assert(Reflection::Utils::IsBase<RefCounted, T>::value && "The invalid type for the reference pointer");
-
 	public:
 		RefPtr()
 			: m_refInstance(nullptr)
 		{
+			static_assert(Reflection::Utils::IsBase<RefCounted, T>::value && "The invalid type for the reference pointer");
 		}
 
 		RefPtr(T* refInstance)
 			: m_refInstance(refInstance)
 		{
+			static_assert(Reflection::Utils::IsBase<RefCounted, T>::value && "The invalid type for the reference pointer");
+
 			if (nullptr != m_refInstance)
 			{
 				m_refInstance->AddRef();
@@ -61,6 +63,8 @@ namespace Memory
 		RefPtr(const RefPtr& other)
 			: m_refInstance(other.m_refInstance)
 		{
+			static_assert(Reflection::Utils::IsBase<RefCounted, T>::value && "The invalid type for the reference pointer");
+
 			if (nullptr != m_refInstance)
 			{
 				m_refInstance->AddRef();
@@ -70,6 +74,8 @@ namespace Memory
 		RefPtr(RefPtr&& other) noexcept
 			: m_refInstance(other.m_refInstance)
 		{
+			static_assert(Reflection::Utils::IsBase<RefCounted, T>::value && "The invalid type for the reference pointer");
+			
 			other.m_refInstance = nullptr;
 		}
 
@@ -82,6 +88,8 @@ namespace Memory
 		{
 			if (this != &other)
 			{
+				Reset();
+
 				m_refInstance = other.m_refInstance;
 				if (nullptr != m_refInstance)
 				{
@@ -96,6 +104,8 @@ namespace Memory
 		{
 			if (this != &other)
 			{
+				Reset();
+
 				m_refInstance = other.m_refInstance;
 				other.m_refInstance = nullptr;
 			}
