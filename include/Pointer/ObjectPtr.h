@@ -18,6 +18,7 @@ namespace Memory
 		public :
 			ObjectPtr()
 				: m_accessor(nullptr)
+				, m_instance(nullptr)
 			{}
 
 			ObjectPtr(const IAccessor* accessor)
