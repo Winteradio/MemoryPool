@@ -34,7 +34,7 @@ namespace Memory
 	template<typename T, typename... Args>
 	RefPtr<T> MakeRef(Args&&... args)
 	{
-		RefPtr<T> ref = new T(std::forward<Args>(args)...);
+		RefPtr<T> ref = new RefData<T>(std::forward<Args>(args)...);
 
 		return ref;
 	}
