@@ -45,6 +45,11 @@ namespace Memory
 		static_assert(!Reflection::Utils::IsConst<U>::value || Reflection::Utils::IsConst<T>::value,
 			"Memory::Cast<T, U> : If the U is the const qualifier, the T must be the const qualifier.");
 
+		if (!other)
+		{
+			return ObjectPtr<T>();
+		}
+
 		U* otherInstance = (&*other);
 		T* instance = Reflection::Cast<T*, U*>(otherInstance);
 		if (nullptr != instance)
@@ -63,6 +68,11 @@ namespace Memory
 		static_assert(!Reflection::Utils::IsConst<U>::value || Reflection::Utils::IsConst<T>::value,
 			"Memory::Cast<T, U> : If the U is the const qualifier, the T must be the const qualifier.");
 
+		if (!other)
+		{
+			return ObjectPtr<T>();
+		}
+
 		U* otherInstance = (&*other);
 		T* instance = Reflection::Cast<T*, U*>(otherInstance);
 		if (nullptr != instance)
@@ -79,6 +89,11 @@ namespace Memory
 		typename Return = typename Reflection::Utils::Conditional<Reflection::Utils::IsConst<U>::value && !Reflection::Utils::IsConst<T>::value, const T, T>::Type>
 	ObjectPtr<Return> ConstCast(const ObjectPtr<U>& other)
 	{
+		if (!other)
+		{
+			return ObjectPtr<T>();
+		}
+
 		U* otherInstance = (&*other);
 		Return* instance = Reflection::Cast<Return*, U*>(otherInstance);
 		if (nullptr != instance)
