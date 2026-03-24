@@ -21,6 +21,10 @@ namespace Memory
 				, m_instance(nullptr)
 			{}
 
+			ObjectPtr(std::nullptr_t)
+				: ObjectPtr()
+			{}
+
 			ObjectPtr(const IAccessor* accessor)
 				: m_accessor(accessor)
 				, m_instance(static_cast<T*>(accessor->GetPointer()))
@@ -237,6 +241,10 @@ namespace Memory
 		public :
 			ObjectPtr()
 				: ObjectPtr<T>()
+			{}
+
+			ObjectPtr(std::nullptr_t)
+				: ObjectPtr()
 			{}
 
 			ObjectPtr(IAccessor* accessor)

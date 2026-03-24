@@ -34,9 +34,9 @@ namespace Memory
 	template<typename T, typename... Args>
 	RefPtr<T> MakeRef(Args&&... args)
 	{
-		RefPtr<T> ref = new RefData<T>(std::forward<Args>(args)...);
+		RefData<T>* refData = new RefData<T>(std::forward<Args>(args)...);
 
-		return ref;
+		return RefPtr<T>(refData->GetInstance(), refData);
 	}
 
 	template<typename T, typename U>
@@ -77,17 +77,69 @@ namespace Memory
 
 	template<typename T, typename U, 
 		typename Return = typename Reflection::Utils::Conditional<Reflection::Utils::IsConst<U>::value && !Reflection::Utils::IsConst<T>::value, const T, T>::Type>
-	ObjectPtr<T> ConstCast(const ObjectPtr<U>& other)
+	ObjectPtr<Return> ConstCast(const ObjectPtr<U>& other)
 	{
 		U* otherInstance = (&*other);
 		Return* instance = Reflection::Cast<Return*, U*>(otherInstance);
 		if (nullptr != instance)
 		{
-			return ObjectPtr<T>(other.GetAccessor());
+			return ObjectPtr<Return>(other.GetAccessor());
 		}
 		else
 		{
-			return ObjectPtr<T>();
+			return ObjectPtr<Return>();
+		}
+	}
+
+	template<typename T, typename U>
+	const RefPtr<T> Cast(const RefPtr<U>& other)
+	{
+		static_assert(!Reflection::Utils::IsConst<U>::value || Reflection::Utils::IsConst<T>::value,
+			"Memory::Cast<T, U> : If the U is the const qualifier, the T must be the const qualifier.");
+
+		U* otherInstance = (&*other);
+		T* instance = Reflection::Cast<T*, U*>(otherInstance);
+		if (nullptr != instance)
+		{
+			return RefPtr<T>(instance, other.GetRefData());
+		}
+		else
+		{
+			return RefPtr<T>();
+		}
+	}
+
+	template<typename T, typename U>
+	RefPtr<T> Cast(RefPtr<U>& other)
+	{
+		static_assert(!Reflection::Utils::IsConst<U>::value || Reflection::Utils::IsConst<T>::value,
+			"Memory::Cast<T, U> : If the U is the const qualifier, the T must be the const qualifier.");
+
+		U* otherInstance = (&*other);
+		T* instance = Reflection::Cast<T*, U*>(otherInstance);
+		if (nullptr != instance)
+		{
+			return RefPtr<T>(instance, other.GetRefData());
+		}
+		else
+		{
+			return RefPtr<T>();
+		}
+	}
+
+	template<typename T, typename U,
+		typename Return = typename Reflection::Utils::Conditional<Reflection::Utils::IsConst<U>::value && !Reflection::Utils::IsConst<T>::value, const T, T>::Type>
+	RefPtr<Return> ConstCast(const RefPtr<U>& other)
+	{
+		U* otherInstance = (&*other);
+		Return* instance = Reflection::Cast<Return*, U*>(otherInstance);
+		if (nullptr != instance)
+		{
+			return RefPtr<Return>(instance, other.GetRefData());
+		}
+		else
+		{
+			return RefPtr<Return>();
 		}
 	}
 };
