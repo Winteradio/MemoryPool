@@ -2,6 +2,7 @@
 #define __MEMORY_REFPTR_H__
 
 #include <Reflection/include/Utils.h>
+#include <Reflection/include/Type/TypeMacro.h>
 #include <assert.h>
 #include <atomic>
 
@@ -9,6 +10,7 @@ namespace Memory
 {
 	class RefCounted
 	{
+		GENERATE(RefCounted);
 	public:
 		RefCounted()
 			: m_refCount(0)
@@ -45,12 +47,18 @@ namespace Memory
 	template<typename T>
 	class RefData : public RefCounted
 	{
+		GENERATE(RefData);
 	public :
 		template<typename... Args>
 		RefData(Args&&... args)
 			: RefCounted()
 			, m_instance(std::forward<Args>(args)...)
 		{}
+
+		T* GetInstance()
+		{
+			return &m_instance;
+		}
 
 	private :
 		template<typename U>
@@ -68,20 +76,13 @@ namespace Memory
 			, m_refCounted(nullptr)
 		{}
 
-		RefPtr(std::nullptr_t)
-			: m_refInstance(nullptr)
-			, m_refCounted(nullptr)
-		{}
-
-		template<typename U>
-		RefPtr(RefData<U>* refData)
-			: m_refInstance(nullptr)
-			, m_refCounted(refData)
+		RefPtr(T* instance, RefCounted* refCounted = nullptr)
+			: m_refInstance(instance)
+			, m_refCounted(refCounted)
 		{
-			if (nullptr != refData)
+			if (nullptr != refCounted)
 			{
-				m_refInstance = static_cast<T*>(&refData->m_instance);
-				refData->AddRef();
+				refCounted->AddRef();
 			}
 		}
 
@@ -243,6 +244,11 @@ namespace Memory
 		bool operator!() const
 		{
 			return !(this->operator bool());
+		}
+
+		RefCounted* GetRefData() const
+		{
+			return m_refCounted;
 		}
 
 		void Reset()
