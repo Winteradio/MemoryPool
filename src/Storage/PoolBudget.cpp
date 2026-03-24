@@ -20,7 +20,7 @@ namespace Memory
 	{}
 
 	PoolBudget::PoolBudget(PoolBudget&& other) noexcept
-		: m_poolCreater(std::move(other.m_poolCreater))
+		: m_poolCreater(other.m_poolCreater)
 		, m_poolSize(std::move(other.m_poolSize))
 		, m_typeName(std::move(other.m_typeName))
 	{
@@ -35,7 +35,7 @@ namespace Memory
 	{
 		if (this != &other)
 		{
-			m_poolCreater = std::move(other.m_poolCreater);
+			m_poolCreater = other.m_poolCreater;
 			m_poolSize = std::move(other.m_poolSize);
 			m_typeName = std::move(other.m_typeName);
 
