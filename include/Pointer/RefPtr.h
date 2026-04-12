@@ -195,12 +195,12 @@ namespace Memory
 			return *this;
 		}
 
-		bool operator==(const RefPtr& other)
+		bool operator==(const RefPtr<T>& other) const
 		{
 			return m_refInstance == other.m_refInstance && m_refCounted == other.m_refCounted;
 		}
 
-		bool operator!=(const RefPtr& other)
+		bool operator!=(const RefPtr<T>& other) const
 		{
 			return !(this->operator==(other));
 		}
@@ -208,7 +208,7 @@ namespace Memory
 		template<typename U,
 			typename = Reflection::Utils::IsEnabled_t<
 			Reflection::Utils::IsSame<T, U>::value || Reflection::Utils::IsBase<T, U>::value>>
-		bool operator==(const RefPtr<U>& other)
+		bool operator==(const RefPtr<U>& other) const
 		{
 			return m_refInstance == static_cast<T*>(other.m_refInstance) && m_refCounted == other.m_refCounted;
 		}
@@ -216,7 +216,7 @@ namespace Memory
 		template<typename U,
 			typename = Reflection::Utils::IsEnabled_t<
 			Reflection::Utils::IsSame<T, U>::value || Reflection::Utils::IsBase<T, U>::value>>
-		bool operator!=(const RefPtr<U>& other)
+		bool operator!=(const RefPtr<U>& other) const
 		{
 			return !(this->operator==(other));
 		}

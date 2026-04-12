@@ -71,7 +71,7 @@ namespace Memory
 
 				for (size_t count = 0; count < m_count; count++)
 				{
-					new (m_instance + count) T(std::forward<Args>(args)...);
+					new (m_instance + count) T(args...);
 				}
 			}
 
