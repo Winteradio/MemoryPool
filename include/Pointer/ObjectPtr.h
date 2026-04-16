@@ -53,7 +53,7 @@ namespace Memory
 				return *this;
 			}
 
-			ObjectPtr& operator=(ObjectPtr&& other)
+			ObjectPtr& operator=(ObjectPtr&& other) noexcept
 			{
 				if (this != &other)
 				{
@@ -143,7 +143,7 @@ namespace Memory
 				return !IsValid();
 			}
 
-			bool operator==(const ObjectPtr<T>& other)
+			bool operator==(const ObjectPtr<T>& other) const
 			{
 				return m_instance == other.m_instance;
 			}
@@ -152,7 +152,7 @@ namespace Memory
 				typename = Reflection::Utils::IsEnabled_t<
 				Reflection::Utils::IsSame<T, U>::value || Reflection::Utils::IsBase<T, U>::value>
 			>
-			bool operator==(const ObjectPtr<U>& other)
+			bool operator==(const ObjectPtr<U>& other) const
 			{
 				return m_instance == other.m_instance;
 			}
@@ -160,7 +160,13 @@ namespace Memory
 		public :
 			const Reflection::TypeInfo* GetPureType() const override
 			{
-				return Reflection::TypeInfo::Get<T>();
+				static const Reflection::TypeInfo* typeInfo = nullptr;
+				if (nullptr == typeInfo)
+				{
+					typeInfo = Reflection::TypeInfo::Get<T>();
+				}
+
+				return typeInfo;
 			}
 
 			const Reflection::TypeInfo* GetRuntimeType() const override
