@@ -55,6 +55,8 @@ namespace Memory
 			, m_instance(std::forward<Args>(args)...)
 		{}
 
+		virtual ~RefData() = default;
+
 		T* GetInstance()
 		{
 			return &m_instance;
