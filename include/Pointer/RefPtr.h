@@ -253,6 +253,11 @@ namespace Memory
 			return m_refCounted;
 		}
 
+		T* Get() const
+		{
+			return m_refInstance;
+		}
+
 		void Reset()
 		{
 			if (nullptr != m_refCounted)
@@ -272,5 +277,17 @@ namespace Memory
 		RefCounted* m_refCounted;
 	};
 };
+
+namespace std
+{
+	template<typename T>
+	struct hash<Memory::RefPtr<T>>
+	{
+		size_t operator()(const Memory::RefPtr<T>& ptr) const
+		{
+			return hash<T*>()(ptr.Get());
+		}
+	};
+}
 
 #endif // __MEMORY_REFPTR_H__

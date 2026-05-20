@@ -149,11 +149,13 @@ namespace Memory
 			return poolList.End();
 		}
 
+#ifdef DEBUG_MEMORY
 		LOGINFO() << "[BUDGET] Remove the pool(" << poolEntry.pool << ") "
 			<< " | type : " << m_typeName
 			<< " | size : " << poolEntry.pool->GetTotalSize()
 			<< " | chunk : " << poolEntry.pool->GetChunkSize()
 			<< " | count : " << poolEntry.pool->GetTotalCount();
+#endif
 
 		return poolList.Erase(poolEntry.handle);
 	}
@@ -183,18 +185,22 @@ namespace Memory
 
 		poolEntry.type = eCurrentType;
 
+#ifdef DEBUG_MEMORY
 		LOGINFO() << "[BUCKET] Update the pool(" << poolEntry.pool << ") "
 			<< " | type : " << m_typeName 
 			<< " | updated(" 
 			<< densityArray[static_cast<size_t>(eOriginType)].second << "->"
 			<< densityArray[static_cast<size_t>(eCurrentType)].second << ")";
+#endif
 
 		return;
 	}
 
 	void PoolBudget::Release()
 	{
+#ifdef DEBUG_MEMORY
 		LOGINFO() << "[BUDGET] Release, the pool bucket(" << this << ") | type : " << m_typeName;
+#endif
 
 		for (auto& poolList : m_poolList)
 		{
@@ -331,11 +337,13 @@ namespace Memory
 
 		pool->Init(m_poolSize);
 
+#ifdef DEBUG_MEMORY
 		LOGINFO() << "[BUDGET] Create the pool(" << pool << ") "
 			<< " | type : " << m_typeName
 			<< " | size : " << pool->GetTotalSize() 
 			<< " | chunk : " << pool->GetChunkSize() 
 			<< " | count : " << pool->GetTotalCount();
+#endif
 
 		return pool;
 	}
