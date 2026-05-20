@@ -102,8 +102,6 @@ namespace Memory
 				const Reflection::TypeInfo* typeInfo = Reflection::TypeInfo::Get<T>();
 				const size_t typeHash = typeInfo->GetTypeHash();
 
-				std::unordered_map<int, int> map;
-
 				auto [itr, inserted] = m_poolMap.TryEmplace(typeHash);
 				auto& poolBudget = itr->second;
 				if (inserted)

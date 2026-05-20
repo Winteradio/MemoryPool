@@ -58,18 +58,22 @@ namespace Memory
 			return arrayEntry.handle;
 		}
 
+#ifdef DEBUG_MEMORY
 		LOGINFO() << "[MEMORY] Remove the array(" << arrayEntry.array << ") "
 			<< " | type : " << m_typeName
 			<< " | size : " << arrayEntry.array->GetTotalSize()
 			<< " | chunk : " << arrayEntry.array->GetChunkSize()
 			<< " | count : " << arrayEntry.array->GetTotalCount();
+#endif
 
 		return m_arrayList.Erase(arrayEntry.handle);
 	}
 
 	void ArrayBudget::Release()
 	{
+#ifdef DEBUG_MEMORY
 		LOGINFO() << "[BUDGET] Release, the array bucket(" << this << ") | type : " << m_typeName;
+#endif
 
 		auto itr = m_arrayList.Begin();
 		while (itr != m_arrayList.End())
@@ -138,11 +142,13 @@ namespace Memory
 
 		array->Init(count);
 
+#ifdef DEBUG_MEMORY
 		LOGINFO() << "[BUDGET] Create the array(" << array << ") " 
 			<< " | type : " << m_typeName
 			<< " | size : " << array->GetTotalSize() 
 			<< " | chunk : " << array->GetChunkSize() 
 			<< " | count : " << array->GetTotalCount();
+#endif
 
 		return array;
 	}
