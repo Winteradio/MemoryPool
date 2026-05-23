@@ -238,7 +238,7 @@ namespace Memory
 			return *m_refInstance;
 		}
 
-		explicit operator bool() const
+		operator bool() const
 		{
 			return nullptr != m_refInstance;
 		}
