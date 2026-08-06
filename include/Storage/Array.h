@@ -12,47 +12,53 @@ namespace Memory
 	template<typename T>
 	class Array : public IStorage
 	{
-		public :
-			Array()
-				: m_chunkSize(0)
-				, m_paddingSize(0)
-				, m_totalCount(0)
-				, m_arena()
-				, m_memory(nullptr)
-				, m_used(false)
-			{}
+	private :
+		enum class eStatus : uint8_t
+		{
+			eNone = 0,
+			eUsed = 1,
+			eReleased = 2
+		};
 
-			virtual ~Array()
+	public :
+		Array()
+			: m_chunkSize(0)
+			, m_paddingSize(0)
+			, m_totalCount(0)
+			, m_arena()
+			, m_memory(nullptr)
+			, m_status(eStatus::eNone)
+		{}
+
+		virtual ~Array()
+		{
+			Clear();
+		}
+
+	public :
+		void Init(const size_t instanceCount) override
+		{
+			const size_t accessorSize = sizeof(Accessor<T>);
+			const size_t alignSize = alignof(T);
+			const size_t paddingSize = (alignSize - (accessorSize % alignSize)) % alignSize;
+			const size_t instanceSize = sizeof(T);
+
+			m_paddingSize = accessorSize + paddingSize;
+			m_chunkSize = instanceSize;
+			m_totalCount = instanceCount;
+			m_memory = m_arena.Allocate(m_paddingSize + (m_chunkSize * m_totalCount));
+		}
+
+		void Clear()
+		{
+			if (nullptr == m_memory)
 			{
-				Clear();
+				return;
 			}
 
-		public :
-			void Init(const size_t instanceCount) override
+			if (m_status != eStatus::eNone)
 			{
-				const size_t accessorSize = sizeof(Accessor<T>);
-				const size_t alignSize = alignof(T);
-				const size_t paddingSize = (alignSize - (accessorSize % alignSize)) % alignSize;
-				const size_t instanceSize = sizeof(T);
-
-				m_paddingSize = accessorSize + paddingSize;
-				m_chunkSize = instanceSize;
-				m_totalCount = instanceCount;
-				m_memory = m_arena.Allocate(m_paddingSize + (m_chunkSize * m_totalCount));
-			}
-
-			void Clear()
-			{
-				if (nullptr == m_memory)
-				{
-					return;
-				}
-
 				IAccessor* accessor = static_cast<IAccessor*>(m_memory);
-				if (nullptr == accessor)
-				{
-					return;
-				}
 
 				accessor->Destruct();
 				accessor->~IAccessor();
@@ -60,83 +66,116 @@ namespace Memory
 				m_arena.Deallocate(m_memory);
 			}
 
-			IAccessor* Acquire() override
+			m_status = eStatus::eNone;
+			m_memory = nullptr;
+		}
+
+		IAccessor* Acquire() override
+		{
+			if (nullptr == m_memory)
 			{
-				if (nullptr == m_memory)
-				{
-					return nullptr;
-				}
-
-				if (m_used)
-				{
-					return static_cast<IAccessor*>(m_memory);
-				}
-				else
-				{
-					m_used = true;
-
-					IAccessor* accessor = new (m_memory) Accessor<T>(m_totalCount);
-					return accessor;
-				}
+				return nullptr;
 			}
 
-			void Sweep()
+			if (m_status == eStatus::eReleased)
 			{
-				IAccessor* accessor = static_cast<IAccessor*>(m_memory);
-				if (nullptr == accessor)
-				{
-					return;
-				}
+				return nullptr;
+			}
+			else if (m_status == eStatus::eUsed)
+			{
+				return static_cast<IAccessor*>(m_memory);
+			}
+			else
+			{
+				m_status = eStatus::eUsed;
 
-				const IAccessor::eStatus status = accessor->GetStatus();
-				if (status == IAccessor::eStatus::eUnreachable)
-				{
-					accessor->Destruct();
-					accessor->~IAccessor();
+				IAccessor* accessor = new (m_memory) Accessor<T>(m_totalCount);
+				return accessor;
+			}
+		}
 
-					m_used = false;
-				}
-				else
-				{
-					accessor->SetStatus(IAccessor::eStatus::eUnreachable);
-				}
+		void Prepare() override
+		{
+			if (nullptr == m_memory || eStatus::eUsed != m_status)
+			{
+				return;
 			}
 
-			size_t GetChunkSize() const override
+			IAccessor* accessor = static_cast<IAccessor*>(m_memory);
+			accessor->SetStatus(IAccessor::eStatus::eUnreachable);
+		}
+
+		void Sweep() override
+		{
+			if (nullptr == m_memory || eStatus::eUsed != m_status)
 			{
-				return m_chunkSize;
+				return;
 			}
 
-			size_t GetTotalSize() const override
+			IAccessor* accessor = static_cast<IAccessor*>(m_memory);
+			const IAccessor::eStatus status = accessor->GetStatus();
+			if (status == IAccessor::eStatus::eUnreachable)
 			{
-				return m_paddingSize + (m_chunkSize * m_totalCount);
+				m_status = eStatus::eReleased;
+			}
+		}
+
+		bool Purge(TimeLimit& timeLimit) override
+		{
+			if (nullptr == m_memory || m_status != eStatus::eReleased)
+			{
+				return true;
 			}
 
-			size_t GetTotalCount() const override
+			if (!timeLimit.HasTime())
 			{
-				return m_totalCount;
+				return false;
 			}
 
-			float GetUsedRatio() const override
-			{
-				return m_used ? 1.0f : 0.0f;
-			}
+			IAccessor* accessor = static_cast<IAccessor*>(m_memory);
 
-			bool Empty() const override
-			{
-				return !m_used;
-			}
+			accessor->Destruct();
+			accessor->~IAccessor();
+			m_status = eStatus::eNone;
+				
+			return true;
+		}
 
-		private :
-			size_t m_chunkSize = 0;
-			size_t m_paddingSize = 0;
-			size_t m_totalCount = 0;
+		size_t GetChunkSize() const override
+		{
+			return m_chunkSize;
+		}
 
-			wtr::Arena m_arena;
+		size_t GetTotalSize() const override
+		{
+			return m_paddingSize + (m_chunkSize * m_totalCount);
+		}
 
-			void* m_memory;
+		size_t GetTotalCount() const override
+		{
+			return m_totalCount;
+		}
 
-			bool m_used;
+		float GetUsedRatio() const override
+		{
+			return Empty() ? 0.0f : 1.0f;
+		}
+
+		bool Empty() const override
+		{
+			return m_status != eStatus::eUsed;
+		}
+
+	private :
+		size_t m_chunkSize = 0;
+		size_t m_paddingSize = 0;
+		size_t m_totalCount = 0;
+
+		wtr::Arena m_arena;
+
+		void* m_memory;
+
+		eStatus m_status;
 	};
 };
 

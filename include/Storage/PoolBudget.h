@@ -30,13 +30,13 @@ namespace Memory
 				{eDensity::eFull, "Full"},
 			} };
 
-			using PoolCreater = IPool * (*)();
-			using PoolIterator = wtr::List<IPool*>::Iterator;
+			using PoolCreater = IStorage * (*)();
+			using PoolIterator = wtr::List<IStorage*>::Iterator;
 
 			struct PoolEntry
 			{
 				PoolIterator handle;
-				IPool* pool;
+				IStorage* pool;
 				eDensity type;
 
 				PoolEntry();
@@ -53,9 +53,9 @@ namespace Memory
 			template<typename T>
 			void Init(const size_t poolSize, const std::string& typeName)
 			{
-				m_poolCreater = []() -> IPool*
+				m_poolCreater = []() -> IStorage*
 				{
-					IPool* pool = new Pool<T>();
+					IStorage* pool = new Pool<T>();
 
 					return pool;
 				};
@@ -66,7 +66,7 @@ namespace Memory
 
 		public :
 			PoolEntry GetPool();
-			PoolEntry AddPool(IPool* pool);
+			PoolEntry AddPool(IStorage* pool);
 			
 			void Release();
 			void Remove();
@@ -74,6 +74,7 @@ namespace Memory
 			void UpdatePool(PoolEntry& poolEntry);
 			void Update();
 
+			void Prepare();
 			void Sweep();
 			bool Purge(TimeLimit& timeLimit);
 
@@ -81,13 +82,13 @@ namespace Memory
 			bool CheckDensity(const PoolEntry& poolEntry) const;
 
 		private :
-			IPool* CreatePool();
+			IStorage* CreatePool();
 			PoolIterator RemovePool(const PoolEntry& poolEntry);
 
-			eDensity GetDensity(const IPool* pool) const;
+			eDensity GetDensity(const IStorage* pool) const;
 
 		private :
-			wtr::List<IPool*> m_poolList[static_cast<size_t>(eDensity::eMax)];
+			wtr::List<IStorage*> m_poolList[static_cast<size_t>(eDensity::eMax)];
 			PoolCreater m_poolCreater;
 			size_t m_poolSize;
 			std::string m_typeName;

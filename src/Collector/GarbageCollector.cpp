@@ -76,6 +76,8 @@ namespace Memory
 			m_graphStack.PushBack(basePtr);
 		}
 
+		GetStorage().Prepare();
+
 		m_status = eStatus::eMarking;
 	}
 

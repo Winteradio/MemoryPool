@@ -49,7 +49,10 @@ namespace Memory
 
 			void Release();
 			void Remove();
+
+			void Prepare();
 			void Sweep();
+			bool Purge(TimeLimit& timeLimit);
 
 			bool Empty() const;
 

@@ -34,7 +34,7 @@ namespace Memory
 
 		uint32_t GetRefCount() const
 		{
-			return m_refCount.load(std::memory_order_relaxed);
+			return m_refCount.load(std::memory_order_acquire);
 		}
 
 	private:

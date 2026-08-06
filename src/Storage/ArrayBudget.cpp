@@ -91,19 +91,44 @@ namespace Memory
 		m_arrayList.Clear();
 	}
 
+	void ArrayBudget::Prepare()
+	{
+		for (auto* array : m_arrayList)
+		{
+			if (nullptr != array)
+			{
+				array->Prepare();
+			}
+		}
+	}
+
 	void ArrayBudget::Sweep()
 	{
-		auto itr = m_arrayList.Begin();
-		while (itr != m_arrayList.End())
+		for (auto* array : m_arrayList)
 		{
-			auto* array = *itr;
 			if (nullptr != array)
 			{
 				array->Sweep();
 			}
-
-			itr++;
 		}
+	}
+
+	bool ArrayBudget::Purge(TimeLimit& timeLimit)
+	{
+		for (auto* array : m_arrayList)
+		{
+			if (nullptr == array)
+			{
+				continue;
+			}
+
+			if (!array->Purge(timeLimit))
+			{
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	void ArrayBudget::Remove()
