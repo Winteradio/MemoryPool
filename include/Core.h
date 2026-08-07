@@ -86,7 +86,7 @@ namespace Memory
 	}
 
 	template<typename T, typename U, 
-		typename Return = typename Reflection::Utils::Conditional<Reflection::Utils::IsConst<U>::value && !Reflection::Utils::IsConst<T>::value, const T, T>::Type>
+		typename Return = typename Reflection::Utils::Conditional<Reflection::Utils::IsConst<U>::value && !Reflection::Utils::IsConst<T>::value, T, const T>::Type>
 	ObjectPtr<Return> ConstCast(const ObjectPtr<U>& other)
 	{
 		if (!other)

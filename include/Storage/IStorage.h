@@ -16,7 +16,9 @@ namespace Memory
 			virtual void Clear() = 0;
 			
 			virtual IAccessor* Acquire() = 0;
+			virtual void Prepare() = 0;
 			virtual void Sweep() = 0;
+			virtual bool Purge(TimeLimit& timeLimit) = 0;
 
 			virtual size_t GetChunkSize() const = 0;
 			virtual size_t GetTotalSize() const = 0;

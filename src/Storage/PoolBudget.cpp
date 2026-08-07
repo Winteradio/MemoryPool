@@ -51,15 +51,15 @@ namespace Memory
 
 	PoolBudget::~PoolBudget()
 	{
-		bool empty = false;
+		bool empty = true;
 
 		const size_t endIndex = static_cast<size_t>(eDensity::eFull);
 		for (size_t index = 0; index <= endIndex; index++)
 		{
 			auto& poolList = m_poolList[index];
-			if (poolList.Empty())
+			if (!poolList.Empty())
 			{
-				empty = true;
+				empty = false;
 
 				break;
 			}
@@ -98,7 +98,7 @@ namespace Memory
 			index--;
 		}
 
-		IPool* newPool = CreatePool();
+		IStorage* newPool = CreatePool();
 		if (nullptr == newPool)
 		{
 			return PoolEntry();
@@ -109,7 +109,7 @@ namespace Memory
 		return newPoolEntry;
 	}
 
-	PoolBudget::PoolEntry PoolBudget::AddPool(IPool* pool)
+	PoolBudget::PoolEntry PoolBudget::AddPool(IStorage* pool)
 	{
 		if (nullptr == pool)
 		{
@@ -247,6 +247,25 @@ namespace Memory
 		}
 	}
 
+	void PoolBudget::Prepare()
+	{
+		const size_t endIndex = static_cast<size_t>(eDensity::eMax);
+		for (size_t index = 0; index < endIndex; index++)
+		{
+			auto& poolList = m_poolList[index];
+			for (auto itr = poolList.Begin(); itr != poolList.End(); itr++)
+			{
+				auto* pool = *itr;
+				if (nullptr == pool)
+				{
+					continue;
+				}
+
+				pool->Prepare();
+			}
+		}
+	}
+
 	void PoolBudget::Sweep()
 	{
 		const size_t endIndex = static_cast<size_t>(eDensity::eMax);
@@ -322,14 +341,14 @@ namespace Memory
 		}
 	}
 
-	IPool* PoolBudget::CreatePool()
+	IStorage* PoolBudget::CreatePool()
 	{
 		if (nullptr == m_poolCreater)
 		{
 			return nullptr;
 		}
 
-		IPool* pool = m_poolCreater();
+		IStorage* pool = m_poolCreater();
 		if (nullptr == pool)
 		{
 			return nullptr;
@@ -348,7 +367,7 @@ namespace Memory
 		return pool;
 	}
 
-	PoolBudget::eDensity PoolBudget::GetDensity(const IPool* pool) const
+	PoolBudget::eDensity PoolBudget::GetDensity(const IStorage* pool) const
 	{
 		if (nullptr == pool)
 		{

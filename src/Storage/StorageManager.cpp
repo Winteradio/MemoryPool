@@ -45,6 +45,23 @@ namespace Memory
 		m_arrayMap.Clear();
 	}
 
+	void StorageManager::Prepare()
+	{
+		LOGINFO() << "[Memory] Start the Prepare";
+
+		for (auto& bucketPair : m_poolMap)
+		{
+			auto& bucket = bucketPair.second;
+			bucket.Prepare();
+		}
+
+		for (auto& bucketPair : m_arrayMap)
+		{
+			auto& bucket = bucketPair.second;
+			bucket.Prepare();
+		}
+	}
+
 	void StorageManager::Sweep()
 	{
 		LOGINFO() << "[MEMORY] Start the Sweep";
@@ -85,7 +102,14 @@ namespace Memory
 		for (auto& bucketPair : m_arrayMap)
 		{
 			auto& bucket = bucketPair.second;
-			bucket.Remove();
+			if (!bucket.Purge(timeLimit))
+			{
+				return false;
+			}
+			else
+			{
+				bucket.Remove();
+			}
 		}
 
 		Clear();

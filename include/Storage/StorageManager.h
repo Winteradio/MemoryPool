@@ -30,6 +30,7 @@ namespace Memory
 			void Release();
 			void Clear();
 
+			void Prepare();
 			void Sweep();
 			bool Purge(TimeLimit& timeLimit);
 

@@ -34,7 +34,7 @@ namespace Memory
 
 		uint32_t GetRefCount() const
 		{
-			return m_refCount.load(std::memory_order_relaxed);
+			return m_refCount.load(std::memory_order_acquire);
 		}
 
 	private:
@@ -173,6 +173,8 @@ namespace Memory
 			Reflection::Utils::IsSame<T, U>::value || Reflection::Utils::IsBase<T, U>::value>>
 		RefPtr& operator=(const RefPtr<U>& other)
 		{
+			Reset();
+
 			m_refInstance = static_cast<T*>(other.m_refInstance);
 			m_refCounted = other.m_refCounted;
 

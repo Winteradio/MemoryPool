@@ -13,18 +13,8 @@
 
 namespace Memory
 {
-	class IPool : public IStorage
-	{
-	public :
-		IPool() = default;
-		virtual ~IPool() = default;
-
-	public :
-		virtual bool Purge(TimeLimit& timeLimit) = 0;
-	};
-
 	template<typename T>
-	class Pool : public IPool
+	class Pool : public IStorage
 	{
 		public :
 			Pool()
@@ -114,6 +104,49 @@ namespace Memory
 				return accessor;
 			}
 
+			void Prepare() override
+			{
+				if (m_usedList.Empty())
+				{
+					return;
+				}
+
+				for (auto* address : m_usedList)
+				{
+					IAccessor* accessor = reinterpret_cast<IAccessor*>(address);
+					if (nullptr != accessor)
+					{
+						accessor->SetStatus(IAccessor::eStatus::eUnreachable);
+					}
+				}
+			}
+
+			void Sweep() override
+			{
+				if (m_usedList.Empty())
+				{
+					return;
+				}
+
+				auto itr = m_usedList.Begin();
+				while (itr != m_usedList.End())
+				{
+					uint8_t* address = *itr;
+					IAccessor* accessor = reinterpret_cast<IAccessor*>(address);
+
+					const IAccessor::eStatus status = accessor->GetStatus();
+					if (status == IAccessor::eStatus::eUnreachable)
+					{
+						m_deadList.PushBack(address);
+						itr = m_usedList.Erase(itr);
+					}
+					else
+					{
+						itr++;
+					}
+				}
+			}
+
 			bool Purge(TimeLimit& timeLimit) override
 			{
 				if (m_deadList.Empty())
@@ -142,34 +175,6 @@ namespace Memory
 				}
 
 				return true;
-			}
-
-			void Sweep() override
-			{
-				if (m_usedList.Empty())
-				{
-					return;
-				}
-
-				auto itr = m_usedList.Begin();
-				while (itr != m_usedList.End())
-				{
-					uint8_t* address = *itr;
-					IAccessor* accessor = reinterpret_cast<IAccessor*>(address);
-
-					const IAccessor::eStatus status = accessor->GetStatus();
-					if (status == IAccessor::eStatus::eUnreachable)
-					{
-						m_deadList.PushBack(address);
-						itr = m_usedList.Erase(itr);
-					}
-					else
-					{
-						accessor->SetStatus(IAccessor::eStatus::eUnreachable);
-
-						itr++;
-					}
-				}
 			}
 			
 			size_t GetChunkSize() const override
